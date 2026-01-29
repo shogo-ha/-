@@ -1,0 +1,3 @@
+@echo off
+echo Starting SurveyApp...
+call npm start

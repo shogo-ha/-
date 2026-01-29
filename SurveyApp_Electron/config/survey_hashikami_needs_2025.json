@@ -1,0 +1,2551 @@
+{
+  "surveyId": "survey_hashikami_needs_2025",
+  "surveyName": "階上町介護予防・日常生活圏域ニーズ調査",
+  "storageKey": "hashikami_needs_2025",
+  "sections": [
+    {
+      "id": "section0",
+      "title": "調査票について",
+      "questions": [
+        {
+          "id": "Q0_1",
+          "num": "",
+          "title": "調査票の記入日",
+          "type": "date_wareki",
+          "csvMeta": {
+            "section": "記入",
+            "title": "記入日"
+          }
+        },
+        {
+          "id": "Q0_2",
+          "num": "",
+          "title": "調査票を記入されたのはどなたですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "あて名のご本人が記入"
+            },
+            {
+              "value": 2,
+              "label": "ご家族が記入",
+              "hasOther": true,
+              "otherOptions": {
+                "placeholder": "あて名のご本人からみた続柄"
+              }
+            },
+            {
+              "value": 3,
+              "label": "その他",
+              "hasOther": true
+            }
+          ],
+          "csvMeta": {
+            "section": "記入",
+            "title": "記入者"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section1",
+      "title": "問1 あなたのご家族や生活状況について",
+      "questions": [
+        {
+          "id": "Q1_1",
+          "num": "Q1-1",
+          "title": "家族構成をお教えください",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "1人暮らし"
+            },
+            {
+              "value": 2,
+              "label": "夫婦2人暮らし（配偶者65歳以上）"
+            },
+            {
+              "value": 3,
+              "label": "夫婦2人暮らし（配偶者64歳以下）"
+            },
+            {
+              "value": 4,
+              "label": "息子・娘との2世帯"
+            },
+            {
+              "value": 5,
+              "label": "その他",
+              "hasOther": true
+            }
+          ],
+          "csvMeta": {
+            "section": "問1",
+            "title": "家族構成"
+          }
+        },
+        {
+          "id": "Q1_2",
+          "num": "Q1-2",
+          "title": "あなたは、普段の生活でどなたかの介護・介助が必要ですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "介護・介助は必要ない"
+            },
+            {
+              "value": 2,
+              "label": "何らかの介護・介助は必要だが、現在は受けていない"
+            },
+            {
+              "value": 3,
+              "label": "現在、何らかの介護を受けている（介護認定を受けずに家族などの介護を受けている場合も含む）"
+            }
+          ],
+          "csvMeta": {
+            "section": "問1",
+            "title": "介護必要"
+          },
+          "subQuestions": [
+            {
+              "id": "Q1_2_1",
+              "num": "①",
+              "title": "介護・介助が必要になった主な原因はなんですか（いくつでも）",
+              "type": "checkbox",
+              "showWhen": {
+                "Q1_2": [
+                  2,
+                  3
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "脳卒中（脳出血・脳梗塞等）"
+                },
+                {
+                  "value": 2,
+                  "label": "心臓病"
+                },
+                {
+                  "value": 3,
+                  "label": "がん（悪性新生物）"
+                },
+                {
+                  "value": 4,
+                  "label": "呼吸器の病気（肺気腫・肺炎等）"
+                },
+                {
+                  "value": 5,
+                  "label": "関節の病気（リウマチ等）"
+                },
+                {
+                  "value": 6,
+                  "label": "認知症（アルツハイマー病等）"
+                },
+                {
+                  "value": 7,
+                  "label": "パーキンソン病"
+                },
+                {
+                  "value": 8,
+                  "label": "糖尿病"
+                },
+                {
+                  "value": 9,
+                  "label": "腎疾患（透析）"
+                },
+                {
+                  "value": 10,
+                  "label": "視覚・聴覚障害"
+                },
+                {
+                  "value": 11,
+                  "label": "骨折・転倒"
+                },
+                {
+                  "value": 12,
+                  "label": "脊椎損傷"
+                },
+                {
+                  "value": 13,
+                  "label": "高齢による衰弱"
+                },
+                {
+                  "value": 14,
+                  "label": "その他",
+                  "hasOther": true
+                },
+                {
+                  "value": 15,
+                  "label": "不明"
+                }
+              ],
+              "csvMeta": {
+                "section": "問1",
+                "title": "介護原因"
+              }
+            },
+            {
+              "id": "Q1_2_2",
+              "num": "②",
+              "title": "主にどなたの介護、介助を受けていますか（いくつでも）",
+              "type": "checkbox",
+              "showWhen": {
+                "Q1_2": [
+                  3
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "配偶者（夫・妻）"
+                },
+                {
+                  "value": 2,
+                  "label": "息子"
+                },
+                {
+                  "value": 3,
+                  "label": "娘"
+                },
+                {
+                  "value": 4,
+                  "label": "子の配偶者"
+                },
+                {
+                  "value": 5,
+                  "label": "孫"
+                },
+                {
+                  "value": 6,
+                  "label": "兄弟・姉妹"
+                },
+                {
+                  "value": 7,
+                  "label": "介護サービスのヘルパー"
+                },
+                {
+                  "value": 8,
+                  "label": "その他",
+                  "hasOther": true
+                }
+              ],
+              "csvMeta": {
+                "section": "問1",
+                "title": "介護者"
+              }
+            }
+          ]
+        },
+        {
+          "id": "Q1_3",
+          "num": "Q1-3",
+          "title": "現在の暮らしの状況を経済的にみてどう感じていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "大変苦しい"
+            },
+            {
+              "value": 2,
+              "label": "やや苦しい"
+            },
+            {
+              "value": 3,
+              "label": "ふつう"
+            },
+            {
+              "value": 4,
+              "label": "ややゆとりがある"
+            },
+            {
+              "value": 5,
+              "label": "大変ゆとりがある"
+            }
+          ],
+          "csvMeta": {
+            "section": "問1",
+            "title": "経済状況"
+          }
+        },
+        {
+          "id": "Q1_4",
+          "num": "Q1-4",
+          "title": "お住まいは一戸建て、または集合住宅のどちらですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "持家（一戸建て）"
+            },
+            {
+              "value": 2,
+              "label": "持家（集合住宅）"
+            },
+            {
+              "value": 3,
+              "label": "公営賃貸住宅（町営住宅）"
+            },
+            {
+              "value": 4,
+              "label": "民間賃貸住宅（一戸建て）"
+            },
+            {
+              "value": 5,
+              "label": "民間賃貸住宅（集合住宅）"
+            },
+            {
+              "value": 6,
+              "label": "借家"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            }
+          ],
+          "csvMeta": {
+            "section": "問1",
+            "title": "住居形態"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section2",
+      "title": "問2 からだを動かすことについて",
+      "questions": [
+        {
+          "id": "Q2_1",
+          "num": "Q2-1",
+          "title": "階段を手すりや壁をつたわらずに昇っていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "階段昇降"
+          }
+        },
+        {
+          "id": "Q2_2",
+          "num": "Q2-2",
+          "title": "椅子に座った状態から何もつかまらずに立ち上がっていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "立上り"
+          }
+        },
+        {
+          "id": "Q2_3",
+          "num": "Q2-3",
+          "title": "15分位続けて歩いていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "15分歩行"
+          }
+        },
+        {
+          "id": "Q2_4",
+          "num": "Q2-4",
+          "title": "過去1年間に転んだ経験がありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "何度もある"
+            },
+            {
+              "value": 2,
+              "label": "1度ある"
+            },
+            {
+              "value": 3,
+              "label": "ない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "転倒経験"
+          }
+        },
+        {
+          "id": "Q2_5",
+          "num": "Q2-5",
+          "title": "転倒に対する不安は大きいですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "とても不安である"
+            },
+            {
+              "value": 2,
+              "label": "やや不安である"
+            },
+            {
+              "value": 3,
+              "label": "あまり不安でない"
+            },
+            {
+              "value": 4,
+              "label": "不安でない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "転倒不安"
+          }
+        },
+        {
+          "id": "Q2_6",
+          "num": "Q2-6",
+          "title": "週に1回以上は外出していますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "ほとんど外出しない"
+            },
+            {
+              "value": 2,
+              "label": "週1回"
+            },
+            {
+              "value": 3,
+              "label": "週2～4回"
+            },
+            {
+              "value": 4,
+              "label": "週5回以上"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "外出頻度"
+          }
+        },
+        {
+          "id": "Q2_7",
+          "num": "Q2-7",
+          "title": "昨年と比べて外出の回数が減っていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "とても減っている"
+            },
+            {
+              "value": 2,
+              "label": "減っている"
+            },
+            {
+              "value": 3,
+              "label": "あまり減っていない"
+            },
+            {
+              "value": 4,
+              "label": "減っていない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "外出減少"
+          }
+        },
+        {
+          "id": "Q2_8",
+          "num": "Q2-8",
+          "title": "外出を控えていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "外出控え"
+          },
+          "subQuestions": [
+            {
+              "id": "Q2_8_1",
+              "num": "①",
+              "title": "外出を控えている理由は、次のどれですか（いくつでも）",
+              "type": "checkbox",
+              "showWhen": {
+                "Q2_8": [
+                  1
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "病気"
+                },
+                {
+                  "value": 2,
+                  "label": "障がい（脳卒中の後遺症など）"
+                },
+                {
+                  "value": 3,
+                  "label": "足腰などの痛み"
+                },
+                {
+                  "value": 4,
+                  "label": "トイレの心配（失禁など）"
+                },
+                {
+                  "value": 5,
+                  "label": "耳の障がい（聞こえの問題等）"
+                },
+                {
+                  "value": 6,
+                  "label": "目の障害"
+                },
+                {
+                  "value": 7,
+                  "label": "外での楽しみがない"
+                },
+                {
+                  "value": 8,
+                  "label": "経済的に出られない"
+                },
+                {
+                  "value": 9,
+                  "label": "交通手段がない"
+                },
+                {
+                  "value": 10,
+                  "label": "その他",
+                  "hasOther": true
+                }
+              ],
+              "csvMeta": {
+                "section": "問2",
+                "title": "外出控理由"
+              }
+            }
+          ]
+        },
+        {
+          "id": "Q2_9",
+          "num": "Q2-9",
+          "title": "外出する際の移動手段は何ですか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "徒歩"
+            },
+            {
+              "value": 2,
+              "label": "自転車"
+            },
+            {
+              "value": 3,
+              "label": "バイク"
+            },
+            {
+              "value": 4,
+              "label": "自動車（自分で運転）"
+            },
+            {
+              "value": 5,
+              "label": "自動車（人に乗せてもらう）"
+            },
+            {
+              "value": 6,
+              "label": "電車"
+            },
+            {
+              "value": 7,
+              "label": "路線バス"
+            },
+            {
+              "value": 8,
+              "label": "病院や施設のバス"
+            },
+            {
+              "value": 9,
+              "label": "車いす"
+            },
+            {
+              "value": 10,
+              "label": "電動車いす（カート）"
+            },
+            {
+              "value": 11,
+              "label": "歩行器・シルバーカー"
+            },
+            {
+              "value": 12,
+              "label": "タクシー"
+            },
+            {
+              "value": 13,
+              "label": "その他",
+              "hasOther": true
+            }
+          ],
+          "csvMeta": {
+            "section": "問2",
+            "title": "移動手段"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section3",
+      "title": "問3 食べることについて",
+      "questions": [
+        {
+          "id": "Q3_1",
+          "num": "Q3-1",
+          "title": "身長・体重を教えてください",
+          "type": "number_pair",
+          "fields": [
+            {
+              "id": "Q3_1_height",
+              "label": "身長",
+              "min": 100,
+              "max": 200,
+              "unit": "cm",
+              "csvMeta": {
+                "section": "問3",
+                "title": "身長"
+              }
+            },
+            {
+              "id": "Q3_1_weight",
+              "label": "体重",
+              "min": 20,
+              "max": 150,
+              "unit": "kg",
+              "csvMeta": {
+                "section": "問3",
+                "title": "体重"
+              }
+            }
+          ]
+        },
+        {
+          "id": "Q3_2",
+          "num": "Q3-2",
+          "title": "半年前と比べて固いものが食べにくくなりましたか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "固物困難"
+          }
+        },
+        {
+          "id": "Q3_3",
+          "num": "Q3-3",
+          "title": "お茶や汁物等でむせることがありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "むせ"
+          }
+        },
+        {
+          "id": "Q3_4",
+          "num": "Q3-4",
+          "title": "口の渇きが気になりますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "口渇"
+          }
+        },
+        {
+          "id": "Q3_5",
+          "num": "Q3-5",
+          "title": "歯の数と入れ歯の利用状況をお教えください",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "自分の歯は20本以上、かつ入れ歯を利用"
+            },
+            {
+              "value": 2,
+              "label": "自分の歯は20本以上、入れ歯の利用なし"
+            },
+            {
+              "value": 3,
+              "label": "自分の歯は19本以下、かつ入れ歯を利用"
+            },
+            {
+              "value": 4,
+              "label": "自分の歯は19本以下、入れ歯の利用なし"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "歯入れ歯"
+          }
+        },
+        {
+          "id": "Q3_6",
+          "num": "Q3-6",
+          "title": "かみ合わせは良いですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "噛合せ"
+          }
+        },
+        {
+          "id": "Q3_7",
+          "num": "Q3-7",
+          "title": "歯磨き（人にやってもらう場合も含む）を毎日していますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "歯磨き"
+          },
+          "subQuestions": [
+            {
+              "id": "Q3_7_1",
+              "num": "①",
+              "title": "毎日入れ歯の手入れをしていますか",
+              "type": "radio",
+              "showWhen": {
+                "Q3_5": [
+                  1,
+                  3
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "はい"
+                },
+                {
+                  "value": 2,
+                  "label": "いいえ"
+                }
+              ],
+              "csvMeta": {
+                "section": "問3",
+                "title": "入歯手入"
+              }
+            }
+          ]
+        },
+        {
+          "id": "Q3_8",
+          "num": "Q3-8",
+          "title": "6か月間で2～3kg以上の体重減少がありましたか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "体重減少"
+          }
+        },
+        {
+          "id": "Q3_9",
+          "num": "Q3-9",
+          "title": "どなたかと食事を共にする機会はありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "毎日ある"
+            },
+            {
+              "value": 2,
+              "label": "週に何度かある"
+            },
+            {
+              "value": 3,
+              "label": "月に何度かある"
+            },
+            {
+              "value": 4,
+              "label": "年に何度かある"
+            },
+            {
+              "value": 5,
+              "label": "ほとんどない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問3",
+            "title": "共食"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section4",
+      "title": "問4 毎日の生活について",
+      "questions": [
+        {
+          "id": "Q4_1",
+          "num": "Q4-1",
+          "title": "物忘れが多いと感じますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "物忘れ"
+          }
+        },
+        {
+          "id": "Q4_2",
+          "num": "Q4-2",
+          "title": "自分で電話番号を調べて、電話をかけることをしていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "電話"
+          }
+        },
+        {
+          "id": "Q4_3",
+          "num": "Q4-3",
+          "title": "今日が何月何日かわからない時がありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "日付認識"
+          }
+        },
+        {
+          "id": "Q4_4",
+          "num": "Q4-4",
+          "title": "バスや電車を使って1人で外出していますか（自家用車でも可）",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "1人外出"
+          }
+        },
+        {
+          "id": "Q4_5",
+          "num": "Q4-5",
+          "title": "自分で食品・日用品の買物をしていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "買物"
+          }
+        },
+        {
+          "id": "Q4_6",
+          "num": "Q4-6",
+          "title": "自分で食事の用意をしていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "食事用意"
+          }
+        },
+        {
+          "id": "Q4_7",
+          "num": "Q4-7",
+          "title": "自分で請求書の支払いをしていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "支払い"
+          }
+        },
+        {
+          "id": "Q4_8",
+          "num": "Q4-8",
+          "title": "自分で預貯金の出し入れをしていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "できるし、している"
+            },
+            {
+              "value": 2,
+              "label": "できるけど、していない"
+            },
+            {
+              "value": 3,
+              "label": "できない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "預金管理"
+          }
+        },
+        {
+          "id": "Q4_9",
+          "num": "Q4-9",
+          "title": "年金などの書類（役所や病院などに出す書類）が書けますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "書類記入"
+          }
+        },
+        {
+          "id": "Q4_10",
+          "num": "Q4-10",
+          "title": "新聞を読んでいますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "新聞"
+          }
+        },
+        {
+          "id": "Q4_11",
+          "num": "Q4-11",
+          "title": "本や雑誌を読んでいますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "読書"
+          }
+        },
+        {
+          "id": "Q4_12",
+          "num": "Q4-12",
+          "title": "健康についての記事や番組に関心がありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "健康関心"
+          }
+        },
+        {
+          "id": "Q4_13",
+          "num": "Q4-13",
+          "title": "友人の家を訪ねていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "友人訪問"
+          }
+        },
+        {
+          "id": "Q4_14",
+          "num": "Q4-14",
+          "title": "家族や友人の相談にのっていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "相談対応"
+          }
+        },
+        {
+          "id": "Q4_15",
+          "num": "Q4-15",
+          "title": "病人を見舞うことができますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "見舞い"
+          }
+        },
+        {
+          "id": "Q4_16",
+          "num": "Q4-16",
+          "title": "若い人に自分から話しかけることがありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "若者対話"
+          }
+        },
+        {
+          "id": "Q4_17",
+          "num": "Q4-17",
+          "title": "趣味はありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい",
+              "hasOther": true,
+              "otherOptions": {
+                "placeholder": "名称・内容"
+              }
+            },
+            {
+              "value": 2,
+              "label": "思いつかない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "趣味"
+          }
+        },
+        {
+          "id": "Q4_18",
+          "num": "Q4-18",
+          "title": "生きがいはありますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい",
+              "hasOther": true,
+              "otherOptions": {
+                "placeholder": "名称・内容"
+              }
+            },
+            {
+              "value": 2,
+              "label": "思いつかない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問4",
+            "title": "生きがい"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section5",
+      "title": "問5 地域での活動について",
+      "questions": [
+        {
+          "id": "Q5_1",
+          "num": "Q5-1",
+          "title": "表中の会・グループ等に参加している場合は該当する頻度の欄に、参加していない場合は「参加していない」に〇を記入してください",
+          "type": "table",
+          "columns": [
+            {
+              "value": 1,
+              "label": "週4回以上"
+            },
+            {
+              "value": 2,
+              "label": "週2～3回"
+            },
+            {
+              "value": 3,
+              "label": "週1回"
+            },
+            {
+              "value": 4,
+              "label": "月1～3回"
+            },
+            {
+              "value": 5,
+              "label": "年に数回"
+            },
+            {
+              "value": 6,
+              "label": "参加していない"
+            }
+          ],
+          "rows": [
+            {
+              "id": "1",
+              "label": "①ボランティアグループ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "ボランティア"
+              }
+            },
+            {
+              "id": "2",
+              "label": "②スポーツ関係のグループやクラブ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "スポーツ"
+              }
+            },
+            {
+              "id": "3",
+              "label": "③趣味関係のグループ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "趣味G"
+              }
+            },
+            {
+              "id": "4",
+              "label": "④学習・教養サークル",
+              "csvMeta": {
+                "section": "問5",
+                "title": "学習教養"
+              }
+            },
+            {
+              "id": "5",
+              "label": "⑤ハート生き活き事業",
+              "csvMeta": {
+                "section": "問5",
+                "title": "ハート"
+              }
+            },
+            {
+              "id": "6",
+              "label": "⑤ほのぼの交流会",
+              "csvMeta": {
+                "section": "問5",
+                "title": "ほのぼの"
+              }
+            },
+            {
+              "id": "7",
+              "label": "⑤赤保内カラオケ愛好会",
+              "csvMeta": {
+                "section": "問5",
+                "title": "赤保内"
+              }
+            },
+            {
+              "id": "8",
+              "label": "⑤石鉢カラオケ愛好会",
+              "csvMeta": {
+                "section": "問5",
+                "title": "石鉢"
+              }
+            },
+            {
+              "id": "9",
+              "label": "⑤大蛇三地区レクリエーションクラブ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "大蛇三"
+              }
+            },
+            {
+              "id": "10",
+              "label": "⑤健康マージャン愛好会",
+              "csvMeta": {
+                "section": "問5",
+                "title": "麻雀"
+              }
+            },
+            {
+              "id": "11",
+              "label": "⑤3B体操 黄色いコスモス",
+              "csvMeta": {
+                "section": "問5",
+                "title": "3B体操"
+              }
+            },
+            {
+              "id": "12",
+              "label": "⑤野場中スリムクラブ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "野場中"
+              }
+            },
+            {
+              "id": "13",
+              "label": "⑤ハッピーはつらつ道場",
+              "csvMeta": {
+                "section": "問5",
+                "title": "はつらつ"
+              }
+            },
+            {
+              "id": "14",
+              "label": "⑤東卓球同好会",
+              "csvMeta": {
+                "section": "問5",
+                "title": "東卓球"
+              }
+            },
+            {
+              "id": "15",
+              "label": "⑤ぷらっとかだせぇ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "かだせぇ"
+              }
+            },
+            {
+              "id": "16",
+              "label": "⑤レクリエーションダンス はまなすクラブ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "はまなす"
+              }
+            },
+            {
+              "id": "17",
+              "label": "⑥老人クラブ",
+              "csvMeta": {
+                "section": "問5",
+                "title": "老人C"
+              }
+            },
+            {
+              "id": "18",
+              "label": "⑦町内会・自治会",
+              "csvMeta": {
+                "section": "問5",
+                "title": "町内会"
+              }
+            },
+            {
+              "id": "19",
+              "label": "⑧収入のある仕事",
+              "csvMeta": {
+                "section": "問5",
+                "title": "有収入仕事"
+              }
+            }
+          ],
+          "csvMeta": {
+            "section": "問5",
+            "title": "活動参加"
+          }
+        },
+        {
+          "id": "Q5_2",
+          "num": "Q5-2",
+          "title": "地域住民の有志による健康づくり活動や趣味等のグループで、いきいきとした地域づくりを進めるとしたら、あなたはその活動に参加者として参加したいと思いますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "ぜひ参加したい"
+            },
+            {
+              "value": 2,
+              "label": "参加してもよい"
+            },
+            {
+              "value": 3,
+              "label": "参加したくない"
+            },
+            {
+              "value": 4,
+              "label": "既に参加している"
+            }
+          ],
+          "csvMeta": {
+            "section": "問5",
+            "title": "参加意向"
+          }
+        },
+        {
+          "id": "Q5_3",
+          "num": "Q5-3",
+          "title": "地域住民の有志による健康づくり活動や趣味等のグループで、いきいきとした地域づくりを進めるとしたら、あなたはその活動に企画・運営（お世話役）として参加したいと思いますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "ぜひ参加したい"
+            },
+            {
+              "value": 2,
+              "label": "参加してもよい"
+            },
+            {
+              "value": 3,
+              "label": "参加したくない"
+            },
+            {
+              "value": 4,
+              "label": "既に参加している"
+            }
+          ],
+          "csvMeta": {
+            "section": "問5",
+            "title": "運営意向"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section6",
+      "title": "問6 就労について",
+      "questions": [
+        {
+          "id": "Q6_1",
+          "num": "Q6-1",
+          "title": "現在のあなたの就労状態はどれですか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "職に就いたことがない"
+            },
+            {
+              "value": 2,
+              "label": "引退した"
+            },
+            {
+              "value": 3,
+              "label": "常勤（フルタイム）"
+            },
+            {
+              "value": 4,
+              "label": "非常勤（パート・アルバイト等）"
+            },
+            {
+              "value": 5,
+              "label": "自営業"
+            },
+            {
+              "value": 6,
+              "label": "求職中"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            }
+          ],
+          "csvMeta": {
+            "section": "問6",
+            "title": "就労状態"
+          },
+          "subQuestions": [
+            {
+              "id": "Q6_1_1",
+              "num": "①",
+              "title": "あなたは、いつ引退しましたか",
+              "type": "radio",
+              "showWhen": {
+                "Q6_1": [
+                  2
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "昭和"
+                },
+                {
+                  "value": 2,
+                  "label": "平成"
+                },
+                {
+                  "value": 3,
+                  "label": "令和"
+                }
+              ],
+              "csvMeta": {
+                "section": "問6",
+                "title": "引退元号"
+              },
+              "subQuestions": [
+                {
+                  "id": "Q6_1_1_year",
+                  "title": "年",
+                  "type": "number",
+                  "min": 1,
+                  "max": 65,
+                  "unit": "年",
+                  "showWhen": {
+                    "Q6_1_1": [
+                      1,
+                      2,
+                      3
+                    ]
+                  },
+                  "csvMeta": {
+                    "section": "問6",
+                    "title": "引退年"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section7",
+      "title": "問7 たすけあいについて",
+      "questions": [
+        {
+          "id": "Q7_1",
+          "num": "Q7-1",
+          "title": "あなたの心配事や愚痴（ぐち）を聞いてくれる人はいますか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "配偶者"
+            },
+            {
+              "value": 2,
+              "label": "同居の子ども"
+            },
+            {
+              "value": 3,
+              "label": "別居の子ども"
+            },
+            {
+              "value": 4,
+              "label": "兄弟姉妹・親戚・親・孫"
+            },
+            {
+              "value": 5,
+              "label": "近隣"
+            },
+            {
+              "value": 6,
+              "label": "友人"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            },
+            {
+              "value": 8,
+              "label": "そのような人はいない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "愚痴聞く人"
+          }
+        },
+        {
+          "id": "Q7_2",
+          "num": "Q7-2",
+          "title": "反対に、あなたが心配事や愚痴（ぐち）を聞いてあげる人はいますか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "配偶者"
+            },
+            {
+              "value": 2,
+              "label": "同居の子ども"
+            },
+            {
+              "value": 3,
+              "label": "別居の子ども"
+            },
+            {
+              "value": 4,
+              "label": "兄弟姉妹・親戚・親・孫"
+            },
+            {
+              "value": 5,
+              "label": "近隣"
+            },
+            {
+              "value": 6,
+              "label": "友人"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            },
+            {
+              "value": 8,
+              "label": "そのような人はいない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "愚痴聞く"
+          }
+        },
+        {
+          "id": "Q7_3",
+          "num": "Q7-3",
+          "title": "あなたが病気で数日間寝込んだときに、看病や世話をしてくれる人はいますか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "配偶者"
+            },
+            {
+              "value": 2,
+              "label": "同居の子ども"
+            },
+            {
+              "value": 3,
+              "label": "別居の子ども"
+            },
+            {
+              "value": 4,
+              "label": "兄弟姉妹・親戚・親・孫"
+            },
+            {
+              "value": 5,
+              "label": "近隣"
+            },
+            {
+              "value": 6,
+              "label": "友人"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            },
+            {
+              "value": 8,
+              "label": "そのような人はいない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "看病人"
+          }
+        },
+        {
+          "id": "Q7_4",
+          "num": "Q7-4",
+          "title": "反対に、看病や世話をしてあげる人はいますか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "配偶者"
+            },
+            {
+              "value": 2,
+              "label": "同居の子ども"
+            },
+            {
+              "value": 3,
+              "label": "別居の子ども"
+            },
+            {
+              "value": 4,
+              "label": "兄弟姉妹・親戚・親・孫"
+            },
+            {
+              "value": 5,
+              "label": "近隣"
+            },
+            {
+              "value": 6,
+              "label": "友人"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            },
+            {
+              "value": 8,
+              "label": "そのような人はいない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "看病する"
+          }
+        },
+        {
+          "id": "Q7_5",
+          "num": "Q7-5",
+          "title": "家族や友人･知人以外で、何かあったときに相談する相手を教えてください（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "自治会・町内会・老人クラブ"
+            },
+            {
+              "value": 2,
+              "label": "社会福祉協議会・民生委員"
+            },
+            {
+              "value": 3,
+              "label": "ケアマネージャー"
+            },
+            {
+              "value": 4,
+              "label": "医師・歯科医師・看護師"
+            },
+            {
+              "value": 5,
+              "label": "地域包括支援センター・役場"
+            },
+            {
+              "value": 6,
+              "label": "その他",
+              "hasOther": true
+            },
+            {
+              "value": 7,
+              "label": "そのような人はいない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "相談先"
+          }
+        },
+        {
+          "id": "Q7_6",
+          "num": "Q7-6",
+          "title": "友人･知人と会う頻度はどれくらいですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "毎日ある"
+            },
+            {
+              "value": 2,
+              "label": "週に何度かある"
+            },
+            {
+              "value": 3,
+              "label": "月に何度かある"
+            },
+            {
+              "value": 4,
+              "label": "年に何度かある"
+            },
+            {
+              "value": 5,
+              "label": "ほとんどない・ない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "友人頻度"
+          }
+        },
+        {
+          "id": "Q7_7",
+          "num": "Q7-7",
+          "title": "この1か月間、何人の友人・知人と会いましたか（同じ人には何度会っても1人と数えることとします）",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "0人（いない）"
+            },
+            {
+              "value": 2,
+              "label": "1～2人"
+            },
+            {
+              "value": 3,
+              "label": "3～5人"
+            },
+            {
+              "value": 4,
+              "label": "6～9人"
+            },
+            {
+              "value": 5,
+              "label": "10人以上"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "友人数"
+          }
+        },
+        {
+          "id": "Q7_8",
+          "num": "Q7-8",
+          "title": "よく会う友人・知人はどんな関係の人ですか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "近所・同じ地域の人"
+            },
+            {
+              "value": 2,
+              "label": "幼なじみ"
+            },
+            {
+              "value": 3,
+              "label": "学生時代の友人"
+            },
+            {
+              "value": 4,
+              "label": "仕事での同僚・元同僚"
+            },
+            {
+              "value": 5,
+              "label": "趣味や関心が同じ友人"
+            },
+            {
+              "value": 6,
+              "label": "ボランティア等の活動での友人"
+            },
+            {
+              "value": 7,
+              "label": "その他",
+              "hasOther": true
+            },
+            {
+              "value": 8,
+              "label": "いない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問7",
+            "title": "友人関係"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section8",
+      "title": "問8 健康について",
+      "questions": [
+        {
+          "id": "Q8_1",
+          "num": "Q8-1",
+          "title": "現在のあなたの健康状態はいかがですか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "とてもよい"
+            },
+            {
+              "value": 2,
+              "label": "まあよい"
+            },
+            {
+              "value": 3,
+              "label": "あまりよくない"
+            },
+            {
+              "value": 4,
+              "label": "よくない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問8",
+            "title": "健康状態"
+          }
+        },
+        {
+          "id": "Q8_2",
+          "num": "Q8-2",
+          "title": "あなたは、現在どの程度幸せですか（「とても不幸」を0点、「とても幸せ」を10点として）",
+          "type": "scale",
+          "min": 0,
+          "max": 10,
+          "minLabel": "とても不幸",
+          "maxLabel": "とても幸せ",
+          "csvMeta": {
+            "section": "問8",
+            "title": "幸福度"
+          }
+        },
+        {
+          "id": "Q8_3",
+          "num": "Q8-3",
+          "title": "この1か月間、気分が沈んだり、ゆううつな気持ちになったりすることがありましたか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問8",
+            "title": "気分沈み"
+          }
+        },
+        {
+          "id": "Q8_4",
+          "num": "Q8-4",
+          "title": "この1か月間、どうしても物事に対して興味がわかない、あるいは心から楽しめない感じがよくありましたか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問8",
+            "title": "興味減退"
+          }
+        },
+        {
+          "id": "Q8_5",
+          "num": "Q8-5",
+          "title": "お酒は飲みますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "ほぼ毎日飲む"
+            },
+            {
+              "value": 2,
+              "label": "時々飲む"
+            },
+            {
+              "value": 3,
+              "label": "ほとんど飲まない"
+            },
+            {
+              "value": 4,
+              "label": "もともと飲まない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問8",
+            "title": "飲酒"
+          }
+        },
+        {
+          "id": "Q8_6",
+          "num": "Q8-6",
+          "title": "たばこは吸っていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "ほぼ毎日吸っている"
+            },
+            {
+              "value": 2,
+              "label": "時々吸っている"
+            },
+            {
+              "value": 3,
+              "label": "吸っていたがやめた"
+            },
+            {
+              "value": 4,
+              "label": "もともと吸っていない"
+            }
+          ],
+          "csvMeta": {
+            "section": "問8",
+            "title": "喫煙"
+          }
+        },
+        {
+          "id": "Q8_7",
+          "num": "Q8-7",
+          "title": "現在治療中、または後遺症のある病気はありますか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "ない"
+            },
+            {
+              "value": 2,
+              "label": "高血圧"
+            },
+            {
+              "value": 3,
+              "label": "脳卒中（脳出血・脳梗塞など）"
+            },
+            {
+              "value": 4,
+              "label": "心臓病"
+            },
+            {
+              "value": 5,
+              "label": "糖尿病"
+            },
+            {
+              "value": 6,
+              "label": "高脂血症（脂質異常症）"
+            },
+            {
+              "value": 7,
+              "label": "呼吸器の病気（肺炎や気管支炎など）"
+            },
+            {
+              "value": 8,
+              "label": "胃腸・肝臓・胆のうの病気"
+            },
+            {
+              "value": 9,
+              "label": "腎臓・前立腺の病気"
+            },
+            {
+              "value": 10,
+              "label": "筋骨格の病気（骨粗しょう症、関節症など）"
+            },
+            {
+              "value": 11,
+              "label": "外傷（転倒・骨折など）"
+            },
+            {
+              "value": 12,
+              "label": "がん（悪性新生物）"
+            },
+            {
+              "value": 13,
+              "label": "血液・免疫の病気"
+            },
+            {
+              "value": 14,
+              "label": "うつ病"
+            },
+            {
+              "value": 15,
+              "label": "認知症（アルツハイマー病など）"
+            },
+            {
+              "value": 16,
+              "label": "パーキンソン病"
+            },
+            {
+              "value": 17,
+              "label": "目の病気"
+            },
+            {
+              "value": 18,
+              "label": "耳の病気"
+            },
+            {
+              "value": 19,
+              "label": "その他",
+              "hasOther": true
+            }
+          ],
+          "csvMeta": {
+            "section": "問8",
+            "title": "治療中病気"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section9",
+      "title": "問9 認知症にかかる相談窓口の把握について",
+      "questions": [
+        {
+          "id": "Q9_1",
+          "num": "Q9-1",
+          "title": "認知症の症状がある、または家族に認知症の症状がある人がいますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問9",
+            "title": "認知症有無"
+          }
+        },
+        {
+          "id": "Q9_2",
+          "num": "Q9-2",
+          "title": "認知症に関する相談窓口を知っていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問9",
+            "title": "認知症窓口"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section10",
+      "title": "問10 高齢者を対象とした相談窓口の把握について",
+      "questions": [
+        {
+          "id": "Q10_1",
+          "num": "Q10-1",
+          "title": "階上町包括支援センター（高齢者の健康や暮らし、介護や心配事等に関する相談窓口）が介護福祉課内に設置されていることを知っていますか",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問10",
+            "title": "包括認知"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section11",
+      "title": "問11 現在、直面している不安や悩みについて",
+      "questions": [
+        {
+          "id": "Q11_1",
+          "num": "Q11-1",
+          "title": "現在、直面している問題や近い将来の不安を感じていることはありますか（いくつでも）",
+          "type": "checkbox",
+          "options": [
+            {
+              "value": 1,
+              "label": "特にない"
+            },
+            {
+              "value": 2,
+              "label": "自分の健康や介護"
+            },
+            {
+              "value": 3,
+              "label": "配偶者の健康や介護"
+            },
+            {
+              "value": 4,
+              "label": "親の健康や介護"
+            },
+            {
+              "value": 5,
+              "label": "親、配偶者以外の健康や介護"
+            },
+            {
+              "value": 6,
+              "label": "自分の就労や失業"
+            },
+            {
+              "value": 7,
+              "label": "現在の生活に必要なお金のやりくり"
+            },
+            {
+              "value": 8,
+              "label": "自宅の老朽化"
+            },
+            {
+              "value": 9,
+              "label": "夫婦や親子、親族との関係"
+            },
+            {
+              "value": 10,
+              "label": "自分の急病などの際に、世話や必要な手続きを頼める人がいない"
+            },
+            {
+              "value": 11,
+              "label": "自分の死後の諸手続きをしてくれる人がいない"
+            },
+            {
+              "value": 12,
+              "label": "他者との付き合いがなく、孤独死する不安がある"
+            }
+          ],
+          "csvMeta": {
+            "section": "問11",
+            "title": "不安悩み"
+          }
+        }
+      ]
+    },
+    {
+      "id": "section12",
+      "title": "問12 スマートフォンの所有・使用状況について",
+      "questions": [
+        {
+          "id": "Q12_1",
+          "num": "Q12-1",
+          "title": "現在、スマホを所有していますか（1つ選択）",
+          "type": "radio",
+          "options": [
+            {
+              "value": 1,
+              "label": "はい"
+            },
+            {
+              "value": 2,
+              "label": "いいえ"
+            }
+          ],
+          "csvMeta": {
+            "section": "問12",
+            "title": "スマホ所有"
+          },
+          "subQuestions": [
+            {
+              "id": "Q12_1_1",
+              "num": "①",
+              "title": "どのくらいの頻度でスマホの利用（メール、ライン、SMS等）をしていますか？",
+              "type": "radio",
+              "showWhen": {
+                "Q12_1": [
+                  1
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "1日に数回"
+                },
+                {
+                  "value": 2,
+                  "label": "ほぼ毎日"
+                },
+                {
+                  "value": 3,
+                  "label": "週に数回"
+                },
+                {
+                  "value": 4,
+                  "label": "月に数回"
+                }
+              ],
+              "csvMeta": {
+                "section": "問12",
+                "title": "スマホ頻度"
+              }
+            },
+            {
+              "id": "Q12_1_2",
+              "num": "②",
+              "title": "スマホで次の操作はできますか（いくつでも）",
+              "type": "checkbox",
+              "showWhen": {
+                "Q12_1": [
+                  1
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "電話を受ける・かける"
+                },
+                {
+                  "value": 2,
+                  "label": "メールを見る・送る"
+                },
+                {
+                  "value": 3,
+                  "label": "インターネットで情報を検索する"
+                },
+                {
+                  "value": 4,
+                  "label": "配信している映像や音楽を視聴する"
+                },
+                {
+                  "value": 5,
+                  "label": "写真や動画を撮影する、保存した写真を見る"
+                },
+                {
+                  "value": 6,
+                  "label": "健康管理アプリ（歩数計、体調管理記録など）"
+                },
+                {
+                  "value": 7,
+                  "label": "地図を見たり、道順や乗換えを調べる"
+                },
+                {
+                  "value": 8,
+                  "label": "催しもの、旅行等の申込みや予約をする"
+                },
+                {
+                  "value": 9,
+                  "label": "ゲームをする"
+                },
+                {
+                  "value": 10,
+                  "label": "店舗や自動販売機で商品を購入する際に支払いをする（バーコード決済など）"
+                },
+                {
+                  "value": 11,
+                  "label": "インターネットサイトで商品を見たり、注文をする"
+                },
+                {
+                  "value": 12,
+                  "label": "銀行やクレジットカード、生命保険等金融機関のサービスを利用する"
+                }
+              ],
+              "csvMeta": {
+                "section": "問12",
+                "title": "スマホ操作"
+              }
+            },
+            {
+              "id": "Q12_1_3",
+              "num": "③",
+              "title": "スマホの利用について、困っていることはありますか（いくつでも）",
+              "type": "checkbox",
+              "showWhen": {
+                "Q12_1": [
+                  1
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "特に困っていることはない"
+                },
+                {
+                  "value": 2,
+                  "label": "操作の仕方が難しい"
+                },
+                {
+                  "value": 3,
+                  "label": "スマホの用語が分からない（タップ、スワイプ、アップデート等）"
+                },
+                {
+                  "value": 4,
+                  "label": "アプリやサービスの使い方が分からない"
+                },
+                {
+                  "value": 5,
+                  "label": "パスワードやアカウントの管理が難しい"
+                },
+                {
+                  "value": 6,
+                  "label": "詐欺の被害が心配、またはあったことがある"
+                },
+                {
+                  "value": 7,
+                  "label": "不審電話やメールがくる"
+                }
+              ],
+              "csvMeta": {
+                "section": "問12",
+                "title": "スマホ困り"
+              }
+            },
+            {
+              "id": "Q12_1_4",
+              "num": "④",
+              "title": "スマホについて、困った時に相談できる人はいますか？（いくつでも）",
+              "type": "checkbox",
+              "showWhen": {
+                "Q12_1": [
+                  1
+                ]
+              },
+              "options": [
+                {
+                  "value": 1,
+                  "label": "家族"
+                },
+                {
+                  "value": 2,
+                  "label": "携帯ショップ"
+                },
+                {
+                  "value": 3,
+                  "label": "友人・知人"
+                },
+                {
+                  "value": 4,
+                  "label": "誰にも相談していない"
+                }
+              ],
+              "csvMeta": {
+                "section": "問12",
+                "title": "スマホ相談"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lastQuestionId": "Q12_1_4"
+}
