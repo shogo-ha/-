@@ -24,7 +24,8 @@ function getOperatorName() {
 // アプリケーションのベースパスを取得
 function getBasePath() {
     if (isDev) {
-        return __dirname;
+        // 開発時: src/main から2階層上がプロジェクトルート
+        return path.join(__dirname, '..', '..');
     } else {
         // portable版の場合、PORTABLE_EXECUTABLE_DIRを使用
         if (process.env.PORTABLE_EXECUTABLE_DIR) {
@@ -46,11 +47,11 @@ function createWindow() {
             contextIsolation: true,
             nodeIntegration: false
         },
-        icon: path.join(__dirname, '_systems', 'icon.ico')
+        icon: path.join(__dirname, '..', 'renderer', 'icon.ico')
     });
 
     // index.htmlを読み込み
-    mainWindow.loadFile(path.join(__dirname, '_systems', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
     // 開発時はDevToolsを開く
     if (isDev) {
@@ -87,7 +88,7 @@ app.on('window-all-closed', () => {
 ipcMain.handle('save-csv', async (event, { filename, content }) => {
     try {
         const basePath = getBasePath();
-        const csvDir = path.join(basePath, 'data', '_csv');
+        const csvDir = path.join(basePath, 'data', 'csv');
         
         // ディレクトリが存在しない場合は作成
         if (!fs.existsSync(csvDir)) {
@@ -139,7 +140,7 @@ ipcMain.handle('get-base-path', async () => {
 ipcMain.handle('list-csv-files', async () => {
     try {
         const basePath = getBasePath();
-        const csvDir = path.join(basePath, 'data', '_csv');
+        const csvDir = path.join(basePath, 'data', 'csv');
         
         if (!fs.existsSync(csvDir)) {
             return { success: true, files: [] };
