@@ -1,11 +1,11 @@
 /**
  * 汎用アンケートフォーム v3.2
- * 
+ *
  * 設計原則:
  * - 各クラスは単一責務
  * - 状態は FormState に集約
  * - イベント駆動で疎結合
- * 
+ *
  * v3.2 変更点（画面酔い対策）:
  * - ScrollHelper: スクロール競合防止（_isScrollingフラグ）
  * - ScrollHelper: 設問表示位置を常に上端基準に統一
@@ -13,18 +13,80 @@
  */
 
 // ============================================
+// InputValidator: 入力値の検証・サニタイズ
+// ============================================
+const InputValidator = {
+    /**
+     * 文字列から制御文字を除去
+     * @param {string} value - 検証する値
+     * @returns {string} サニタイズされた値
+     */
+    sanitizeString(value) {
+        if (value === null || value === undefined) return '';
+        // 制御文字（タブ、改行は許可）を除去
+        return String(value).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    },
+
+    /**
+     * IDを検証・サニタイズ
+     * @param {string} id - 検証するID
+     * @returns {string} サニタイズされたID
+     */
+    sanitizeId(id) {
+        if (!id || typeof id !== 'string') return '';
+        // 制御文字を除去し、前後の空白をトリム
+        return id.replace(/[\x00-\x1F\x7F]/g, '').trim();
+    },
+
+    /**
+     * 数値入力を検証
+     * @param {string} value - 検証する値
+     * @param {Object} options - オプション（min, max）
+     * @returns {string} 検証済みの値
+     */
+    sanitizeNumber(value, options = {}) {
+        if (value === null || value === undefined || value === '') return '';
+        const num = parseFloat(value);
+        if (isNaN(num)) return '';
+        if (options.min !== undefined && num < options.min) return String(options.min);
+        if (options.max !== undefined && num > options.max) return String(options.max);
+        return String(num);
+    }
+};
+
+// ============================================
 // ScrollHelper: スクロール処理の共通ユーティリティ
 // 【v3.2】画面酔い対策: 表示位置統一 & 滑らかなスクロール
 // ============================================
 const ScrollHelper = {
-    // 共通定数
-    HEADER_OFFSET: 80,    // 固定ヘッダーの高さ
-    BOTTOM_MARGIN: 40,    // 下部の余白
-    TOP_PADDING: 20,      // 設問上部の余白（視認性向上）
-    
-    // スクロール設定
-    SCROLL_DURATION: 400, // スクロール時間（ミリ秒）← 調整可能
-    
+    // CSS変数から値を取得（フォールバック値付き）
+    // ※ CSS変数と連動することで、スタイル変更時にJS側の修正が不要になる
+    get HEADER_OFFSET() {
+        return this._getCSSVar('--header-offset', 80);
+    },
+    get BOTTOM_MARGIN() {
+        return this._getCSSVar('--bottom-margin', 40);
+    },
+    get TOP_PADDING() {
+        return this._getCSSVar('--top-padding', 20);
+    },
+    get SCROLL_DURATION() {
+        return this._getCSSVar('--scroll-duration', 400);
+    },
+
+    /**
+     * CSS変数から数値を取得
+     * @param {string} varName - CSS変数名（例: '--header-offset'）
+     * @param {number} fallback - フォールバック値
+     * @returns {number}
+     */
+    _getCSSVar(varName, fallback) {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(varName);
+        if (!value) return fallback;
+        // 'px' や 'ms' を除去して数値に変換
+        return parseInt(value.replace(/[^0-9.-]/g, ''), 10) || fallback;
+    },
+
     // 最後にスクロールした目標位置（重複スクロール防止用）
     _lastTargetPosition: null,
     _animationId: null,
@@ -293,8 +355,46 @@ class ConditionEvaluator {
         this._visibilityCache = new Map();
         // 手動オーバーライド状態（targetId → 'open' | null）
         this._manualOverrides = new Map();
-        // 展開ボタン要素のキャッシュ（targetId → button element）
+        // 展開アイコン要素のキャッシュ（targetId → icon element）
         this._toggleButtons = new Map();
+        // 全条件分岐先を常に表示するモード
+        this._showAll = false;
+    }
+
+    /**
+     * 全条件分岐先の常時表示モードを切り替え
+     * @param {boolean} showAll - trueで常に表示
+     */
+    setShowAll(showAll) {
+        this._showAll = showAll;
+
+        // 全ての条件分岐先を取得して表示/非表示を切り替え
+        for (const conditions of Object.values(this.conditionMap)) {
+            for (const cond of conditions) {
+                const targetEl = cond.isSection
+                    ? document.getElementById(cond.targetId)
+                    : document.getElementById(`q_${cond.targetId}`);
+                if (!targetEl) continue;
+
+                if (showAll) {
+                    targetEl.classList.add('show');
+                    this._updateToggleIcon(cond.targetId, true, false);
+                } else {
+                    // 条件を再評価
+                    this._visibilityCache.delete(cond.targetId);
+                }
+            }
+        }
+
+        // showAllがfalseの場合、全ての条件を再評価
+        if (!showAll) {
+            this._manualOverrides.clear();
+            for (const parentId of Object.keys(this.conditionMap)) {
+                const fieldType = document.querySelector(`input[type="checkbox"][name="${parentId}"]`)
+                    ? 'checkbox' : 'radio';
+                this.evaluate(parentId, fieldType);
+            }
+        }
     }
 
     get conditionMap() {
@@ -343,12 +443,12 @@ class ConditionEvaluator {
 
         for (const cond of conditions) {
             const targetId = cond.targetId;
-            
-            // 手動オーバーライドがある場合はスキップ
-            if (this._manualOverrides.get(targetId)) {
+
+            // 常時表示モードまたは手動オーバーライドがある場合はスキップ
+            if (this._showAll || this._manualOverrides.get(targetId)) {
                 continue;
             }
-            
+
             const shouldShow = value !== '' && cond.showValues.includes(valueNum);
             
             // 状態が変わらない場合はスキップ
@@ -378,12 +478,12 @@ class ConditionEvaluator {
 
         for (const cond of conditions) {
             const targetId = cond.targetId;
-            
-            // 手動オーバーライドがある場合はスキップ
-            if (this._manualOverrides.get(targetId)) {
+
+            // 常時表示モードまたは手動オーバーライドがある場合はスキップ
+            if (this._showAll || this._manualOverrides.get(targetId)) {
                 continue;
             }
-            
+
             const shouldShow = checkedValues.some(v => cond.showValues.includes(v));
             
             // 状態が変わらない場合はスキップ
@@ -424,10 +524,10 @@ class ConditionEvaluator {
             // 手動オーバーライドを解除して条件判定に戻す
             this._manualOverrides.delete(targetId);
             this._visibilityCache.delete(targetId);
-            
+
             // 親設問の条件を再評価
             this._reevaluateForTarget(targetId);
-            
+
             const isNowOpen = targetEl.classList.contains('show');
             this._updateToggleButton(targetId, isNowOpen, false);
         } else {
@@ -436,6 +536,62 @@ class ConditionEvaluator {
             targetEl.classList.add('show');
             this._updateToggleButton(targetId, true, true);
         }
+    }
+
+    /**
+     * 指定した親設問の条件分岐先をすべて開く
+     * @param {string} parentId - 親設問のID
+     * @returns {boolean} 開いた分岐があればtrue
+     */
+    openBranchesForParent(parentId) {
+        const conditions = this.conditionMap[parentId];
+        if (!conditions || conditions.length === 0) return false;
+
+        let opened = false;
+        for (const cond of conditions) {
+            const targetEl = cond.isSection
+                ? document.getElementById(cond.targetId)
+                : document.getElementById(`q_${cond.targetId}`);
+
+            if (!targetEl || !targetEl.classList.contains('conditional')) continue;
+
+            // 既に開いていなければ開く
+            if (!targetEl.classList.contains('show')) {
+                this._manualOverrides.set(cond.targetId, 'open');
+                targetEl.classList.add('show');
+                this._updateToggleIcon(cond.targetId, true, true);
+                opened = true;
+            }
+        }
+        return opened;
+    }
+
+    /**
+     * 指定した親設問の条件分岐先をすべて閉じる（条件判定に戻す）
+     * @param {string} parentId - 親設問のID
+     * @returns {boolean} 閉じた分岐があればtrue
+     */
+    closeBranchesForParent(parentId) {
+        const conditions = this.conditionMap[parentId];
+        if (!conditions || conditions.length === 0) return false;
+
+        let closed = false;
+        for (const cond of conditions) {
+            // 手動オーバーライドがあれば解除
+            if (this._manualOverrides.has(cond.targetId)) {
+                this._manualOverrides.delete(cond.targetId);
+                this._visibilityCache.delete(cond.targetId);
+                closed = true;
+            }
+        }
+
+        // 条件を再評価
+        if (closed) {
+            const fieldType = document.querySelector(`input[type="checkbox"][name="${parentId}"]`)
+                ? 'checkbox' : 'radio';
+            this.evaluate(parentId, fieldType);
+        }
+        return closed;
     }
 
     /**
@@ -455,62 +611,87 @@ class ConditionEvaluator {
     }
 
     /**
-     * 展開ボタンの状態を更新
+     * 展開アイコンの状態を更新
      */
-    _updateToggleButton(targetId, isOpen, isManual) {
-        const button = this._toggleButtons.get(targetId);
-        if (!button) return;
-        
+    _updateToggleIcon(targetId, isOpen, isManual) {
+        const icon = this._toggleButtons.get(targetId);
+        if (!icon) return;
+
         if (isOpen) {
-            button.textContent = isManual ? '▼ 手動展開中（クリックで戻す）' : '▼ 展開中';
-            button.classList.add('expanded');
-            button.classList.toggle('manual-override', isManual);
+            icon.textContent = '−';
+            icon.title = isManual ? '手動展開中（-キーまたはクリックで戻す）' : '展開中';
+            icon.classList.add('expanded');
+            icon.classList.toggle('manual-override', isManual);
         } else {
-            button.textContent = '▶ 分岐先を開く';
-            button.classList.remove('expanded', 'manual-override');
+            icon.textContent = '+';
+            icon.title = '分岐先を開く (+キー)';
+            icon.classList.remove('expanded', 'manual-override');
         }
     }
 
+    // 後方互換: _updateToggleButtonを_updateToggleIconにマッピング
+    _updateToggleButton(targetId, isOpen, isManual) {
+        this._updateToggleIcon(targetId, isOpen, isManual);
+    }
+
     /**
-     * 条件分岐先の展開ボタンを生成・設置
+     * 条件分岐先の展開アイコンを生成・設置（設問タイトル横に配置）
      */
     setupToggleButtons() {
-        // conditionMapから全ての条件分岐先を取得
-        const allTargets = new Set();
-        for (const conditions of Object.values(this.conditionMap)) {
+        // conditionMapから全ての条件分岐先の親設問を取得
+        const parentToTargets = new Map(); // parentId → [{targetId, isSection}]
+
+        for (const [parentId, conditions] of Object.entries(this.conditionMap)) {
             for (const cond of conditions) {
-                allTargets.add({ id: cond.targetId, isSection: cond.isSection });
+                if (!parentToTargets.has(parentId)) {
+                    parentToTargets.set(parentId, []);
+                }
+                parentToTargets.get(parentId).push({
+                    targetId: cond.targetId,
+                    isSection: cond.isSection
+                });
             }
         }
 
-        for (const target of allTargets) {
-            const targetEl = target.isSection 
-                ? document.getElementById(target.id)
-                : document.getElementById(`q_${target.id}`);
-            
-            if (!targetEl || !targetEl.classList.contains('conditional')) continue;
-            
-            // 既にボタンがあればスキップ
-            if (targetEl.previousElementSibling?.classList.contains('conditional-toggle')) continue;
-            
-            // ボタンを作成
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'conditional-toggle';
-            button.textContent = '▶ 分岐先を開く';
-            button.dataset.targetId = target.id;
-            
-            // クリックイベント
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.toggleManual(target.id);
-            });
-            
-            // 対象要素の直前に挿入
-            targetEl.parentNode.insertBefore(button, targetEl);
-            
-            // キャッシュに保存
-            this._toggleButtons.set(target.id, button);
+        // 各親設問のタイトル横にアイコンを追加
+        for (const [parentId, targets] of parentToTargets) {
+            const parentEl = document.getElementById(`q_${parentId}`);
+            if (!parentEl) continue;
+
+            const titleEl = parentEl.querySelector('.question-title');
+            if (!titleEl) continue;
+
+            // 既にアイコンがあればスキップ
+            if (titleEl.querySelector('.conditional-icon')) continue;
+
+            // 各ターゲットに対してアイコンを作成
+            for (const target of targets) {
+                const targetEl = target.isSection
+                    ? document.getElementById(target.targetId)
+                    : document.getElementById(`q_${target.targetId}`);
+
+                if (!targetEl || !targetEl.classList.contains('conditional')) continue;
+
+                // アイコンを作成
+                const icon = document.createElement('span');
+                icon.className = 'conditional-icon';
+                icon.textContent = '+';
+                icon.title = '分岐先を開く (+キー)';
+                icon.dataset.targetId = target.targetId;
+
+                // クリックイベント
+                icon.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleManual(target.targetId);
+                });
+
+                // タイトルの末尾に追加
+                titleEl.appendChild(icon);
+
+                // キャッシュに保存
+                this._toggleButtons.set(target.targetId, icon);
+            }
         }
     }
 
@@ -545,12 +726,79 @@ class ConditionEvaluator {
     clearCache() {
         this._visibilityCache.clear();
         this._manualOverrides.clear();
-        
-        // 全ボタンをリセット
-        for (const [targetId, button] of this._toggleButtons) {
-            button.textContent = '▶ 分岐先を開く';
-            button.classList.remove('expanded', 'manual-override');
+
+        // 全アイコンをリセット
+        for (const [targetId, icon] of this._toggleButtons) {
+            icon.textContent = '+';
+            icon.title = '分岐先を開く (+キー)';
+            icon.classList.remove('expanded', 'manual-override');
         }
+    }
+
+    /**
+     * 現在手動オーバーライドされている設問IDの一覧を取得
+     * @returns {Array<string>} 手動オーバーライド中の設問ID配列
+     */
+    getManualOverrideIds() {
+        return Array.from(this._manualOverrides.keys());
+    }
+
+    /**
+     * 指定した設問が手動オーバーライド状態かどうかを判定
+     * @param {string} questionId - 設問ID
+     * @returns {boolean}
+     */
+    isManuallyOverridden(questionId) {
+        return this._manualOverrides.has(questionId);
+    }
+
+    /**
+     * 指定した条件分岐先の条件が実際に満たされているかを判定
+     * @param {string} targetId - 条件分岐先の設問ID
+     * @returns {boolean} 条件が満たされていればtrue
+     */
+    isConditionMet(targetId) {
+        // conditionMapから、このtargetIdを制御する親設問を探す
+        for (const [parentId, conditions] of Object.entries(this.conditionMap)) {
+            for (const cond of conditions) {
+                if (cond.targetId === targetId) {
+                    // 親設問の現在の値を取得
+                    const isCheckbox = !!document.querySelector(`input[type="checkbox"][name="${parentId}"]`);
+
+                    if (isCheckbox) {
+                        const checkedInputs = document.querySelectorAll(`input[name="${parentId}"]:checked`);
+                        const checkedValues = Array.from(checkedInputs).map(inp => parseInt(inp.value, 10));
+                        // いずれかの選択値がshowValuesに含まれていれば条件満たす
+                        if (checkedValues.some(v => cond.showValues.includes(v))) {
+                            return true;
+                        }
+                    } else {
+                        const checked = document.querySelector(`input[name="${parentId}"]:checked`);
+                        const value = checked ? parseInt(checked.value, 10) : null;
+                        // 選択値がshowValuesに含まれていれば条件満たす
+                        if (value !== null && cond.showValues.includes(value)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 手動オーバーライドされているが、条件は満たされていない設問IDの一覧を取得
+     * （本当に「強制的に開いた」設問のみ）
+     * @returns {Array<string>}
+     */
+    getForcedOverrideIds() {
+        const result = [];
+        for (const targetId of this._manualOverrides.keys()) {
+            if (!this.isConditionMet(targetId)) {
+                result.push(targetId);
+            }
+        }
+        return result;
     }
 }
 
@@ -653,12 +901,28 @@ class AnswerHandler {
     constructor(state, conditionEvaluator) {
         this.state = state;
         this.condition = conditionEvaluator;
-        
+
         // 2桁入力の待機時間（ミリ秒）
-        this.DIGIT_WAIT_MS = 700;
-        
+        this.DIGIT_WAIT_MS = 500;
+
         // 選択肢キャッシュ（設問名 → { inputs: NodeList, count: number }）
         this._optionCache = new Map();
+
+        // 待機中の選択コールバック（Tab/クリック時の即時確定用）
+        this._pendingSelect = null;
+    }
+
+    /**
+     * 待機中の2桁入力バッファを即座に確定
+     * Tab進行や他設問クリック時に呼び出す
+     */
+    flushDigitBuffer() {
+        if (this.state.digitBuffer !== '' && this._pendingSelect) {
+            const num = parseInt(this.state.digitBuffer, 10);
+            this.state.clearDigitBuffer();
+            this._pendingSelect(num);
+            this._pendingSelect = null;
+        }
     }
 
     get otherFieldMap() {
@@ -730,21 +994,26 @@ class AnswerHandler {
     _handleTwoDigitInput(digit, maxValue, onSelect) {
         const pressedDigit = parseInt(digit, 10);
         const maxFirstDigit = Math.floor(maxValue / 10);
-        
+
         if (this.state.digitBuffer !== '') {
             // 2桁目入力 → 結合して選択
             const combined = this.state.appendDigitBuffer(digit);
+            this._pendingSelect = null;
             onSelect(parseInt(combined, 10));
         } else if (pressedDigit >= 1 && pressedDigit <= maxFirstDigit) {
             // 待機が必要な数字（1〜maxFirstDigit）
             this.state.setDigitBuffer(digit);
+            // コールバックを保存（Tab/クリック時の即時確定用）
+            this._pendingSelect = onSelect;
             this.state.setDigitTimer(() => {
                 const num = parseInt(this.state.digitBuffer, 10);
                 this.state.clearDigitBuffer();
+                this._pendingSelect = null;
                 onSelect(num);
             }, this.DIGIT_WAIT_MS);
         } else {
             // 即時選択（0、または待機不要な数字）
+            this._pendingSelect = null;
             onSelect(pressedDigit);
         }
     }
@@ -1005,11 +1274,12 @@ class AnswerHandler {
 // InputRouter: キー/クリックの振り分け
 // ============================================
 class InputRouter {
-    constructor(state, navigator, answerHandler) {
+    constructor(state, navigator, answerHandler, conditionEvaluator) {
         this.state = state;
         this.navigator = navigator;
         this.answerHandler = answerHandler;
-        
+        this.condition = conditionEvaluator;
+
         this.onModalKeydown = null;  // モーダル用コールバック
         this.onEnterAtEnd = null;    // 最終設問でEnter時のコールバック
         this.onIdRequired = null;    // ID未入力時のコールバック
@@ -1087,6 +1357,31 @@ class InputRouter {
             }
             e.preventDefault();
             this.answerHandler.handleDigitInput(e.key);
+            return;
+        }
+
+        // +キー: 現在の設問の条件分岐先を開く
+        if (e.key === '+' && this.state.questionIndex >= 0) {
+            const question = this.state.getCurrentQuestion();
+            if (question) {
+                const questionId = question.id?.replace('q_', '') || question.dataset.questionId;
+                if (questionId && this.condition.openBranchesForParent(questionId)) {
+                    e.preventDefault();
+                }
+            }
+            return;
+        }
+
+        // -キー: 現在の設問の条件分岐先を閉じる
+        if (e.key === '-' && this.state.questionIndex >= 0) {
+            const question = this.state.getCurrentQuestion();
+            if (question) {
+                const questionId = question.id?.replace('q_', '') || question.dataset.questionId;
+                if (questionId && this.condition.closeBranchesForParent(questionId)) {
+                    e.preventDefault();
+                }
+            }
+            return;
         }
     }
 
@@ -1097,6 +1392,9 @@ class InputRouter {
             const moved = this._handleMultiFieldNav(activeEl, question, isShiftTab);
             if (moved) return;
         }
+
+        // 待機中の2桁入力バッファを即座に確定
+        this.answerHandler.flushDigitBuffer();
 
         // 現在位置を同期（blur前に実行）
         this._syncFocusPosition(activeEl);
@@ -1182,6 +1480,9 @@ class InputRouter {
             return;
         }
 
+        // 待機中の2桁入力バッファを即座に確定
+        this.answerHandler.flushDigitBuffer();
+
         // 選択肢からフォーカスを外す（枠線を消す）
         if (document.activeElement && document.activeElement !== document.body) {
             document.activeElement.blur();
@@ -1206,6 +1507,9 @@ class InputRouter {
             this.navigator.focusId();
             return;
         }
+
+        // 待機中の2桁入力バッファを即座に確定
+        this.answerHandler.flushDigitBuffer();
 
         // 選択肢からフォーカスを外す（枠線を消す）
         if (document.activeElement && document.activeElement !== document.body) {
@@ -1240,9 +1544,13 @@ class ModalController {
 
     // 確認モーダル
     showConfirm() {
-        const id = this.state.elements.respondentId?.value.trim() || '（未入力）';
-        if (this.elements.confirmId) this.elements.confirmId.textContent = id;
-        this.elements.confirmModal?.classList.add('show');
+        try {
+            const id = this.state.elements.respondentId?.value?.trim() || '（未入力）';
+            if (this.elements.confirmId) this.elements.confirmId.textContent = id;
+            this.elements.confirmModal?.classList.add('show');
+        } catch (e) {
+            console.error('showConfirm error:', e);
+        }
     }
 
     closeConfirm() {
@@ -1265,11 +1573,26 @@ class ModalController {
         const tbody = this.elements.dataListBody;
         if (!tbody) return;
 
+        // 手動展開回答があるレコードが存在するかチェック
+        const hasAnyManualOverride = records.some(r => r['_manualOverrideFields']);
+        const legend = document.querySelector('.data-list-legend');
+        if (legend) {
+            legend.style.display = hasAnyManualOverride ? 'block' : 'none';
+        }
+
         tbody.innerHTML = '';
         records.forEach((record, index) => {
             const tr = document.createElement('tr');
+            const hasManualOverride = !!record['_manualOverrideFields'];
+
+            // 条件を満たさず手動展開された回答がある場合はハイライト
+            if (hasManualOverride) {
+                tr.classList.add('manual-override-row');
+                tr.title = `条件外の手動展開回答: ${record['_manualOverrideFields']}`;
+            }
+
             tr.innerHTML = `
-                <td>${this._escape(record.ID || '')}</td>
+                <td>${this._escape(record.ID || '')}${hasManualOverride ? ' <span class="manual-override-badge" title="条件を満たさない設問に回答あり">⚠</span>' : ''}</td>
                 <td>${this._escape(record['入力日時'] || '')}</td>
                 <td>${this._escape(record['入力者'] || '')}</td>
                 <td>
@@ -1547,7 +1870,7 @@ class SurveyApp {
         this.condition = new ConditionEvaluator(this.state);
         this.navigator = new Navigator(this.state, this.condition);
         this.answerHandler = new AnswerHandler(this.state, this.condition);
-        this.inputRouter = new InputRouter(this.state, this.navigator, this.answerHandler);
+        this.inputRouter = new InputRouter(this.state, this.navigator, this.answerHandler, this.condition);
         this.modal = new ModalController(this.state);
         this.uiUpdater = new UIUpdater(this.state);
         
@@ -1576,7 +1899,9 @@ class SurveyApp {
             deleteTargetId: document.getElementById('deleteTargetId'),
             currentIndicator: document.getElementById('currentIndicator'),
             editingId: document.getElementById('editingId'),
-            container: document.querySelector('.container')
+            container: document.querySelector('.container'),
+            settingsModal: document.getElementById('settingsModal'),
+            showAllConditional: document.getElementById('showAllConditional')
         };
 
         // 状態初期化
@@ -1607,11 +1932,16 @@ class SurveyApp {
     // --- 公開API（HTML側から呼び出される）---
     
     showConfirmModal() {
-        if (!this.validateId()) {
-            this.navigator.focusId();
-            return;
+        try {
+            if (!this.validateId()) {
+                this.navigator.focusId();
+                return;
+            }
+            this.modal.showConfirm();
+        } catch (e) {
+            console.error('確認モーダル表示エラー:', e);
+            alert('エラーが発生しました: ' + e.message);
         }
-        this.modal.showConfirm();
     }
 
     confirmAndSave() {
@@ -1654,32 +1984,52 @@ class SurveyApp {
             this._showToast('エクスポートするデータがありません', 'error');
             return;
         }
-        
-        // ファイル名生成: {storageKey}_{日付}_{出力者}_{件数}件.csv
+
+        // 条件を満たさず手動展開された回答があるデータをチェック
+        const manualOverrideRecords = data.filter(d => d['_manualOverrideFields']);
+        if (manualOverrideRecords.length > 0) {
+            const ids = manualOverrideRecords.map(d => d.ID).join(', ');
+            const proceed = confirm(
+                `以下のデータに、条件を満たさず手動展開された設問への回答が含まれています:\n\n` +
+                `ID: ${ids}\n\n` +
+                `（本来は表示されない設問に強制的に入力された回答です）\n\n` +
+                `このまま出力しますか？`
+            );
+            if (!proceed) return;
+        }
+
+        // CSV出力用にデータをコピーし、メタデータフィールドを除外
+        const exportData = data.map(record => {
+            const cleaned = { ...record };
+            delete cleaned['_manualOverrideFields'];
+            return cleaned;
+        });
+
+        // ファイル名生成: {storageKey}_{日付}_{出力者}_{件数}件.xlsx
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');  // YYYYMMDD
         const operator = this.state.operatorName || '未設定';
-        const count = data.length;
-        const filename = `${this._config.storageKey}_${dateStr}_${operator}_${count}件.csv`;
-        
-        const result = await CSVExporter.exportWithHeaders(
-            data, filename, 
-            this._config.questionsConfig, 
-            this._config.questionsMetadata, 
+        const count = exportData.length;
+        const filename = `${this._config.storageKey}_${dateStr}_${operator}_${count}件.xlsx`;
+
+        const result = await DataExporter.exportWithHeaders(
+            data, filename,  // 元データを渡す（_manualOverrideFieldsを含む）
+            this._config.questionsConfig,
+            this._config.questionsMetadata,
             this._config.fieldOrder
         );
-        
-        if (result) {
+
+        if (result && result.success) {
             // 完了IDを保存
             this._saveCompletedIds(data.map(d => d.ID));
             // 出力成功後、保存済みデータをクリア
             this.storage.clearAll();
             this.updateRecordCount();
-            
-            // Electron環境では保存先を表示
-            if (window.electronAPI && window.electronAPI.isElectron) {
-                this._showToast(`data/_csv/ に保存しました（${data.length}件のデータをクリア）`);
+
+            // Electron環境では保存先パスを表示
+            if (window.electronAPI && window.electronAPI.isElectron && result.path) {
+                this._showToast(`保存しました: ${result.path}（${data.length}件のデータをクリア）`);
             } else {
-                this._showToast(`CSVをエクスポートしました（${data.length}件のデータをクリア）`);
+                this._showToast(`Excelをエクスポートしました（${data.length}件のデータをクリア）`);
             }
         }
     }
@@ -1825,7 +2175,14 @@ class SurveyApp {
     }
 
     _collectFormData() {
-        const data = { ID: this.state.elements.respondentId?.value.trim() || '' };
+        // IDをサニタイズ
+        const rawId = this.state.elements.respondentId?.value || '';
+        const data = { ID: InputValidator.sanitizeId(rawId) };
+
+        // 手動オーバーライドされた設問で回答があるものを追跡
+        // ※条件を満たしている場合は除外（本当に強制的に開いた場合のみ追跡）
+        const manualOverrideAnswers = [];
+        const manualOverrideIds = this.condition.getForcedOverrideIds();
 
         for (const fieldId of this._config.fieldOrder) {
             if (['ID', '入力日時', '入力者'].includes(fieldId)) continue;
@@ -1833,27 +2190,91 @@ class SurveyApp {
             // 表形式
             const tableConfig = this._config.tableConfigs?.[fieldId];
             if (tableConfig?.rowNames) {
+                // 表形式の親設問が手動オーバーライドされているかチェック
+                const isTableOverridden = manualOverrideIds.includes(fieldId);
                 for (const rowName of tableConfig.rowNames) {
-                    data[rowName] = this._getRadioValue(rowName);
+                    const rowValue = this._getRadioValue(rowName);
+                    data[rowName] = rowValue;
+                    if (rowValue && isTableOverridden) {
+                        manualOverrideAnswers.push(rowName);
+                    }
                 }
                 continue;
             }
 
             const fieldType = this._getFieldType(fieldId);
+            let value = '';
             if (fieldType === 'checkbox') {
-                data[fieldId] = this._getCheckboxValues(fieldId);
+                value = this._getCheckboxValues(fieldId);
+                data[fieldId] = value;
             } else if (fieldType === 'radio') {
-                data[fieldId] = this._getRadioValue(fieldId);
+                value = this._getRadioValue(fieldId);
+                data[fieldId] = value;
             } else {
                 const el = document.getElementById(fieldId);
-                data[fieldId] = el?.value || '';
+                // テキスト入力はサニタイズ
+                const rawValue = el?.value || '';
+                value = InputValidator.sanitizeString(rawValue);
+                data[fieldId] = value;
+            }
+
+            // 手動オーバーライドされた設問に回答がある場合は記録
+            // fieldId自体がオーバーライドされているか、または親設問がオーバーライドされているかチェック
+            if (value && this._isFieldInManualOverride(fieldId, manualOverrideIds)) {
+                manualOverrideAnswers.push(fieldId);
             }
         }
 
         data['入力日時'] = new Date().toLocaleString('ja-JP');
-        data['入力者'] = this.state.operatorName;
+        // 入力者名もサニタイズ
+        data['入力者'] = InputValidator.sanitizeString(this.state.operatorName);
+
+        // 手動オーバーライド回答があれば記録（メタデータとして保存）
+        if (manualOverrideAnswers.length > 0) {
+            data['_manualOverrideFields'] = manualOverrideAnswers.join(',');
+        }
 
         return data;
+    }
+
+    /**
+     * フィールドが手動オーバーライドされた設問内にあるかチェック
+     * @param {string} fieldId - フィールドID
+     * @param {Array<string>} manualOverrideIds - 手動オーバーライドされた設問ID一覧
+     * @returns {boolean}
+     */
+    _isFieldInManualOverride(fieldId, manualOverrideIds) {
+        // 直接一致
+        if (manualOverrideIds.includes(fieldId)) {
+            return true;
+        }
+
+        // フィールドのDOM要素から親の条件付き設問を探す
+        const fieldEl = document.getElementById(fieldId) ||
+                       document.querySelector(`input[name="${fieldId}"]`);
+        if (!fieldEl) return false;
+
+        // 親の.conditional要素を探して、そのIDがオーバーライドされているかチェック
+        const conditionalParent = fieldEl.closest('.conditional.show');
+        if (conditionalParent) {
+            // 設問要素のID（q_プレフィックスを除去）
+            const parentQuestionEl = conditionalParent.closest('.question[data-name]');
+            if (parentQuestionEl) {
+                const parentId = parentQuestionEl.dataset.name;
+                if (manualOverrideIds.includes(parentId)) {
+                    return true;
+                }
+            }
+            // セクションの場合
+            if (conditionalParent.classList.contains('survey-section')) {
+                const sectionId = conditionalParent.id;
+                if (manualOverrideIds.includes(sectionId)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     _getFieldType(fieldId) {
@@ -1969,17 +2390,31 @@ class SurveyApp {
     }
 
     validateId() {
-        const id = this.state.elements.respondentId?.value.trim();
-        if (!id) {
-            this._showIdError('IDを入力してください');
+        try {
+            const respondentIdEl = this.state.elements.respondentId;
+            if (!respondentIdEl) {
+                this._showIdError('フォームの初期化エラー');
+                return false;
+            }
+            const rawId = respondentIdEl.value || '';
+            const id = InputValidator.sanitizeId(rawId);
+            if (!id) {
+                this._showIdError('IDを入力してください');
+                return false;
+            }
+            // サニタイズ後の値をフィールドに反映
+            respondentIdEl.value = id;
+            if (this.storage.isDuplicateId(id, this.state.editingIndex)) {
+                this._showIdError('このIDは既に使用されています');
+                return false;
+            }
+            this._clearIdError();
+            return true;
+        } catch (e) {
+            console.error('ID検証エラー:', e);
+            this._showIdError('検証エラー: ' + e.message);
             return false;
         }
-        if (this.storage.isDuplicateId(id, this.state.editingIndex)) {
-            this._showIdError('このIDは既に使用されています');
-            return false;
-        }
-        this._clearIdError();
-        return true;
     }
 
     updateRecordCount() {
@@ -2060,6 +2495,22 @@ class SurveyApp {
             toast.className = 'toast show' + (type ? ` ${type}` : '');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
+    }
+
+    // --- 設定モーダル ---
+
+    showSettings() {
+        const modal = this.state.elements.settingsModal;
+        if (modal) modal.classList.add('show');
+    }
+
+    closeSettings() {
+        const modal = this.state.elements.settingsModal;
+        if (modal) modal.classList.remove('show');
+    }
+
+    toggleShowAllConditional(checked) {
+        this.condition.setShowAll(checked);
     }
 
     /**

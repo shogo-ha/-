@@ -60,6 +60,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     /**
+     * Excelファイルを保存（手動展開セルのハイライト付き）
+     * @param {string} filename - ファイル名
+     * @param {Array<Array>} headerRows - ヘッダー行の配列
+     * @param {Array<Array>} dataRows - データ行の配列
+     * @param {Array<{row: number, cols: number[]}>} manualOverrideCells - 手動展開セルの位置
+     * @returns {Promise<{success: boolean, path?: string, error?: string}>}
+     */
+    saveExcel: (filename, headerRows, dataRows, manualOverrideCells) => {
+        return ipcRenderer.invoke('save-excel', { filename, headerRows, dataRows, manualOverrideCells });
+    },
+
+    /**
      * Electron環境かどうかを判定
      */
     isElectron: true

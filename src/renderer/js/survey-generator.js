@@ -278,8 +278,9 @@ class SurveyGenerator {
                 otherInput = this._generateOtherInput(q.id, opt.value, opt.otherOptions || {});
             }
             
+            const ariaLabel = `${this._escape(q.title)}: ${this._escape(opt.label)}`;
             return `
-                <label class="option-label" data-value="${opt.value}" role="radio" aria-checked="false" tabindex="0">
+                <label class="option-label" data-value="${opt.value}" role="radio" aria-checked="false" aria-label="${ariaLabel}" tabindex="0">
                     <span class="option-key">${idx + 1}</span>
                     <span>${this._escape(opt.label)}</span>
                     <input type="radio" name="${q.id}" value="${opt.value}" aria-hidden="true">
@@ -287,7 +288,7 @@ class SurveyGenerator {
                 ${otherInput}
             `;
         }).join('');
-        
+
         return `<div class="options" role="radiogroup" aria-label="${this._escape(q.title)}">${options}</div>`;
     }
 
@@ -313,8 +314,9 @@ class SurveyGenerator {
                 otherInput = this._generateOtherInput(q.id, opt.value, opt.otherOptions || {});
             }
             
+            const ariaLabel = `${this._escape(q.title)}: ${this._escape(opt.label)}`;
             return `
-                <label class="option-label" data-value="${opt.value}" role="checkbox" aria-checked="false" tabindex="0">
+                <label class="option-label" data-value="${opt.value}" role="checkbox" aria-checked="false" aria-label="${ariaLabel}" tabindex="0">
                     <span class="option-key">${idx + 1}</span>
                     <span>${this._escape(opt.label)}</span>
                     <input type="checkbox" name="${q.id}" value="${opt.value}" aria-hidden="true">
@@ -322,7 +324,7 @@ class SurveyGenerator {
                 ${otherInput}
             `;
         }).join('');
-        
+
         return `${maxSelectNote}<div class="options" data-type="checkbox" ${maxSelectAttr} role="group" aria-label="${this._escape(q.title)}">${options}</div>`;
     }
 
@@ -426,15 +428,16 @@ class SurveyGenerator {
         if (q.csvMeta) {
             this.questionsMetadata[q.id] = q.csvMeta;
         }
-        
+
         const min = q.min || 0;
         const max = q.max || 10;
         const options = [];
-        
+
         for (let i = min; i <= max; i++) {
+            const ariaLabel = `${this._escape(q.title)}: ${i}`;
             options.push(`
-                <label class="scale-option">
-                    <input type="radio" name="${q.id}" value="${i}">
+                <label class="scale-option" role="radio" aria-checked="false" aria-label="${ariaLabel}" tabindex="0">
+                    <input type="radio" name="${q.id}" value="${i}" aria-hidden="true">
                     <span class="scale-value">${i}</span>
                 </label>
             `);
@@ -446,7 +449,7 @@ class SurveyGenerator {
                     <span>${this._escape(q.minLabel || '')}</span>
                     <span>${this._escape(q.maxLabel || '')}</span>
                 </div>
-                <div class="scale-options">${options.join('')}</div>
+                <div class="scale-options" role="radiogroup" aria-label="${this._escape(q.title)}">${options.join('')}</div>
             </div>
         `;
     }

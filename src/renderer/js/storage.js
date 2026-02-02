@@ -63,7 +63,7 @@ class SurveyStorage {
         } catch (e) {
             console.error('Failed to save data:', e);
             if (e.name === 'QuotaExceededError') {
-                this._showError('ストレージ容量が不足しています。古いデータをCSV出力して削除してください。');
+                this._showError('ストレージ容量が不足しています。古いデータを出力して削除してください。');
             } else {
                 this._showError('データの保存に失敗しました');
             }
@@ -163,7 +163,7 @@ class SurveyStorage {
 /**
  * CSV出力クラス
  */
-class CSVExporter {
+class DataExporter {
     /**
      * 丸数字変換テーブル（0〜50対応）
      */
@@ -233,7 +233,7 @@ class CSVExporter {
             return true;
         } catch (e) {
             console.error('CSV export failed:', e);
-            alert('CSV出力に失敗しました');
+            alert('データ出力に失敗しました');
             return false;
         }
     }
@@ -285,7 +285,7 @@ class CSVExporter {
             return true;
         } catch (e) {
             console.error('CSV export failed:', e);
-            alert('CSV出力に失敗しました');
+            alert('データ出力に失敗しました');
             return false;
         }
     }
@@ -383,13 +383,22 @@ class CSVExporter {
     }
 
     /**
-     * CSVの値をエスケープ
+     * CSVの値をエスケープ（CSVインジェクション対策含む）
      * @param {string} value
      * @returns {string}
      */
     static _escapeCSVValue(value) {
-        // ダブルクォート、カンマ、改行を含む場合は囲む
-        if (value.includes('"') || value.includes(',') || value.includes('\n') || value.includes('\r')) {
+        if (value === null || value === undefined) return '';
+        value = String(value);
+
+        // 数式インジェクション対策: 危険な先頭文字をチェック
+        const formulaChars = /^[=+\-@\t\r]/;
+        const needsQuoting = value.includes('"') ||
+                             value.includes(',') ||
+                             value.includes('\n') ||
+                             formulaChars.test(value);
+
+        if (needsQuoting) {
             // ダブルクォートを二重にエスケープ
             value = value.replace(/"/g, '""');
             return `"${value}"`;
@@ -406,9 +415,9 @@ class CSVExporter {
     }
 
     /**
-     * データを4行ヘッダー形式でCSVファイルとしてダウンロード
+     * データを4行ヘッダー形式でExcelファイルとして保存
      * @param {Array} data - エクスポートするデータ
-     * @param {string} filename - ファイル名
+     * @param {string} filename - ファイル名（.xlsxに変換される）
      * @param {Object} questionsConfig - 設問定義（選択肢値）
      * @param {Object} questionsMetadata - 設問メタデータ（大問・小問名）
      *   例: {
@@ -417,46 +426,77 @@ class CSVExporter {
      *     ...
      *   }
      * @param {Array} fieldOrder - フィールドの出力順序
-     * @returns {boolean|Promise<boolean>} 成功したかどうか
+     * @returns {Promise<{success: boolean, path?: string}>} 結果
      */
-    static exportWithHeaders(data, filename, questionsConfig, questionsMetadata, fieldOrder) {
+    static async exportWithHeaders(data, filename, questionsConfig, questionsMetadata, fieldOrder) {
         if (!data || !data.length) {
             alert('データがありません');
-            return false;
+            return { success: false };
         }
 
         try {
             // 4行ヘッダーを構築
             const headerInfo = this._buildMultiRowHeaders(data[0], questionsConfig, questionsMetadata, fieldOrder);
-            const csvRows = [
-                headerInfo.row1.join(','),  // 大問
-                headerInfo.row2.join(','),  // （空白/補助）
-                headerInfo.row3.join(','),  // 小問
-                headerInfo.row4.join(',')   // 回答番号
+            const headerRows = [
+                headerInfo.row1,  // 大問
+                headerInfo.row2,  // （空白/補助）
+                headerInfo.row3,  // 小問
+                headerInfo.row4   // 回答番号
             ];
 
-            // データ行を変換
-            for (const row of data) {
+            // データ行を変換し、手動展開セルの位置を記録
+            const dataRows = [];
+            const manualOverrideCells = [];  // [{row: number, cols: number[]}]
+
+            // フィールドIDから列インデックスへのマッピングを作成
+            const fieldToColIndices = this._buildFieldToColumnMap(headerInfo.headers);
+
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
                 const expandedRow = this._expandRecord(row, headerInfo.headers, questionsConfig);
-                const values = expandedRow.map(v => this._escapeCSVValue(v));
-                csvRows.push(values.join(','));
+                dataRows.push(expandedRow);
+
+                // 手動展開フィールドがある場合、該当列を特定
+                if (row['_manualOverrideFields']) {
+                    const overrideFields = row['_manualOverrideFields'].split(',');
+                    const cols = [];
+                    for (const fieldId of overrideFields) {
+                        const colIndices = fieldToColIndices[fieldId.trim()];
+                        if (colIndices) {
+                            cols.push(...colIndices);
+                        }
+                    }
+                    if (cols.length > 0) {
+                        manualOverrideCells.push({ row: i, cols: [...new Set(cols)] });
+                    }
+                }
             }
 
-            // BOM付きUTF-8
-            const csv = '\uFEFF' + csvRows.join('\n');
-            
             // Electron環境かどうかで分岐
-            if (window.electronAPI && window.electronAPI.isElectron) {
-                // Electron: ローカルファイルに直接保存
-                return this._saveToLocal(filename, csv);
+            if (window.electronAPI && window.electronAPI.isElectron && window.electronAPI.saveExcel) {
+                // ファイル名を.xlsxに変更
+                const excelFilename = filename.replace(/\.csv$/, '.xlsx');
+                // Electron: Excelファイルとして保存
+                return await window.electronAPI.saveExcel(excelFilename, headerRows, dataRows, manualOverrideCells);
             } else {
-                // ブラウザ: ダウンロードリンクで保存
-                return this._downloadFile(filename, csv);
+                // ブラウザ: CSVとしてダウンロード（フォールバック）
+                const csvRows = [
+                    headerInfo.row1.join(','),
+                    headerInfo.row2.join(','),
+                    headerInfo.row3.join(','),
+                    headerInfo.row4.join(',')
+                ];
+                for (const row of dataRows) {
+                    csvRows.push(row.map(v => this._escapeCSVValue(v)).join(','));
+                }
+                const csv = '\uFEFF' + csvRows.join('\n');
+                this._downloadFile(filename, csv);
+                return { success: true };
             }
         } catch (e) {
-            console.error('CSV export failed:', e);
-            alert('CSV出力に失敗しました');
-            return false;
+            console.error('Excel export failed:', e);
+            alert('Excel出力に失敗しました: ' + e.message);
+            return { success: false };
         }
     }
 
@@ -464,21 +504,21 @@ class CSVExporter {
      * Electron環境でローカルファイルに保存
      * @param {string} filename - ファイル名
      * @param {string} content - CSV内容
-     * @returns {Promise<boolean>}
+     * @returns {Promise<{success: boolean, path?: string}>}
      */
     static async _saveToLocal(filename, content) {
         try {
             const result = await window.electronAPI.saveCSV(filename, content);
             if (result.success) {
-                return true;
+                return { success: true, path: result.path };
             } else {
                 alert('CSV保存に失敗しました: ' + result.error);
-                return false;
+                return { success: false };
             }
         } catch (e) {
-            console.error('Electron CSV save failed:', e);
-            alert('CSV保存に失敗しました');
-            return false;
+            console.error('CSV保存エラー:', e);
+            alert('CSV保存に失敗しました: ' + e.message);
+            return { success: false };
         }
     }
 
@@ -603,6 +643,24 @@ class CSVExporter {
         }
 
         return { headers, row1, row2, row3, row4 };
+    }
+
+    /**
+     * フィールドIDから列インデックスへのマッピングを構築
+     * @param {Array} headers - ヘッダー配列 [{field, value?}, ...]
+     * @returns {Object} { fieldId: [colIndex1, colIndex2, ...], ... }
+     */
+    static _buildFieldToColumnMap(headers) {
+        const map = {};
+        for (let i = 0; i < headers.length; i++) {
+            const header = headers[i];
+            const fieldId = header.field;
+            if (!map[fieldId]) {
+                map[fieldId] = [];
+            }
+            map[fieldId].push(i);
+        }
+        return map;
     }
 }
 

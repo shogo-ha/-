@@ -18,13 +18,19 @@
     --primary: #2e7d32;
     --primary-dark: #1b5e20;
     --primary-light: #e8f5e9;
-    
+
     /* テキスト入力共通変数 */
     --input-border: #dee2e6;
     --input-border-radius: 8px;
     --input-padding: 12px 16px;
     --input-font-size: 1.1rem;
     --input-transition: border-color 0.2s, box-shadow 0.2s;
+
+    /* スクロール・レイアウト共通変数（JS側と共有） */
+    --header-offset: 80px;
+    --bottom-margin: 40px;
+    --top-padding: 20px;
+    --scroll-duration: 400ms;
 }
 
 * { box-sizing: border-box; }
@@ -726,10 +732,48 @@ body {
 }
 .data-list-table th { background: #f8f9fa; }
 .data-list-table tr:hover { background: var(--primary-light); }
-.data-list-table .btn { 
-    padding: 4px 8px; 
-    font-size: 0.8rem; 
-    margin: 2px; 
+.data-list-table .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    margin: 2px;
+}
+
+/* 手動展開回答ハイライト（薄緑） */
+.data-list-table tr.manual-override-row {
+    background: #e8f5e9;
+}
+.data-list-table tr.manual-override-row:hover {
+    background: #c8e6c9;
+}
+.manual-override-badge {
+    color: #f57c00;
+    font-size: 0.9em;
+    cursor: help;
+}
+
+/* データ一覧凡例 */
+.data-list-legend {
+    display: none; /* JSで必要時に表示 */
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.legend-color {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+.manual-override-legend .legend-color {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
 }
 
 /* ===== 表形式設問 ===== */

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>アンケート入力フォーム</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <style>
+        /* 追加スタイル */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 1.2em;
+            color: #666;
+        }
+        .config-selector {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .config-selector select {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.85em;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #6c757d;
+            color: #6c757d;
+        }
+        .btn-outline:hover {
+            background: #6c757d;
+            color: white;
+        }
+        .sub-question {
+            margin-left: 30px;
+            padding-left: 20px;
+            border-left: 3px solid #e0e0e0;
+        }
+        .conditional {
+            display: none;
+        }
+        .conditional.show {
+            display: block;
+        }
+        .number-pair {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .number-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .number-field input {
+            width: 100px;
+            padding: 8px 12px;
+            font-size: 1.1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .number-field .unit {
+            color: #666;
+        }
+        .scale-input {
+            padding: 10px 0;
+        }
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .scale-options {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+        .scale-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        .scale-option input {
+            margin-bottom: 5px;
+        }
+        .scale-value {
+            font-weight: bold;
+        }
+        /* 条件分岐アイコン */
+        .conditional-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            margin-left: 8px;
+            border-radius: 3px;
+            vertical-align: middle;
+        }
+        .conditional-icon:hover {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .conditional-icon.expanded {
+            color: #2e7d32;
+        }
+        .conditional-icon.manual-override {
+            color: #f57c00;
+        }
+        /* 設定モーダル */
+        .settings-group {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .settings-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        .settings-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        .settings-hint {
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1 id="surveyTitle">アンケート入力フォーム</h1>
+            <div class="header-info">
+                <span>未出力のデータ: <strong id="recordCount">0</strong>件</span>
+                <button type="button" class="btn btn-sm btn-outline" onclick="surveyForm.showCompletedIds()">保存済みID</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="surveyForm.showSettings()">⚙ 設定</button>
+                <span>現在: <strong id="currentIndicator">ID</strong></span>
+                <span id="digitIndicator" class="digit-indicator" style="display:none;"></span>
+            </div>
+        </header>
+
+        <!-- 編集モード表示 -->
+        <div class="edit-mode-banner">
+            編集中: ID <span id="editingId"></span>
+            <button class="btn btn-secondary" onclick="surveyForm.cancelEdit()">キャンセル</button>
+        </div>
+
+        <!-- 調査選択（複数調査対応時） -->
+        <div class="config-selector" id="configSelector" style="display:none;">
+            <label>調査を選択:
+                <select id="surveySelect" onchange="loadSurvey(this.value)">
+                    <option value="">-- 選択してください --</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- ID入力セクション -->
+        <section id="idSection" class="id-section">
+            <div class="id-input-group">
+                <label for="respondentId">回答者ID</label>
+                <input type="text" id="respondentId" class="id-input" placeholder="IDを入力" autocomplete="off">
+                <span id="idError" class="error-text" style="display:none;"></span>
+            </div>
+        </section>
+
+        <!-- フォーム本体（動的生成） -->
+        <main id="formContainer">
+            <div class="loading">読み込み中...</div>
+        </main>
+
+        <!-- 操作ボタン -->
+        <div class="action-buttons">
+            <button type="button" class="btn btn-primary" id="saveBtn" onclick="surveyForm.showConfirmModal()">
+                保存 (Enter)
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="surveyForm.showDataList()">
+                未出力データ一覧
+            </button>
+            <button type="button" class="btn btn-success" onclick="surveyForm.exportCSV()">
+                入力データ出力
+            </button>
+            <button type="button" class="btn btn-danger" onclick="surveyForm.clearAllData()">
+                全削除
+            </button>
+        </div>
+    </div>
+
+    <!-- 確認モーダル -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3>保存確認</h3>
+            <p>ID: <strong id="confirmId"></strong> のデータを保存しますか？</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="surveyForm.confirmAndSave()">保存 (Enter)</button>
+                <button class="btn btn-secondary" onclick="surveyForm.closeConfirmModal()">キャンセル (Esc)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功モーダル -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <h3>✓ 保存完了</h3>
+            <p>ID: <strong id="savedId"></strong></p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="surveyForm.closeSuccessModal()">次の入力へ (Enter)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- データ一覧モーダル -->
+    <div class="modal" id="dataListModal">
+        <div class="modal-content modal-large">
+            <h3>未出力データ一覧</h3>
+            <div class="data-list-legend">
+                <span class="legend-item manual-override-legend">
+                    <span class="legend-color"></span>
+                    条件を満たさず手動展開された設問に回答あり
+                </span>
+            </div>
+            <div id="dataListContainer">
+                <table class="data-list-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>入力日時</th>
+                            <th>入力者</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataListBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="surveyForm.closeDataListModal()">閉じる (Esc)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 削除確認モーダル -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-content">
+            <h3>削除確認</h3>
+            <p>ID: <strong id="deleteTargetId"></strong> を削除しますか？</p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="surveyForm.confirmDelete()">削除 (Enter)</button>
+                <button class="btn btn-secondary" onclick="surveyForm.closeDeleteConfirmModal()">キャンセル (Esc)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h3>⚙ 設定</h3>
+            <div class="settings-group">
+                <label class="settings-label">
+                    <input type="checkbox" id="showAllConditional" onchange="surveyForm.toggleShowAllConditional(this.checked)">
+                    条件分岐先を常に表示
+                </label>
+                <p class="settings-hint">ONにすると、条件に関わらず全ての分岐先が表示されます</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="surveyForm.closeSettings()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- トースト -->
+    <div id="toast" class="toast"></div>
+
+    <script src="./js/storage.js"></script>
+    <script src="./js/survey-generator.js"></script>
+    <script src="./js/survey-form.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+</html>

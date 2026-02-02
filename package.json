@@ -2,7 +2,7 @@
   "name": "survey-app",
   "version": "1.0.0",
   "description": "アンケート入力アプリ",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win portable",
@@ -21,11 +21,9 @@
       "output": "dist"
     },
     "files": [
-      "main.js",
-      "preload.js",
-      "_systems/**/*"
+      "src/**/*"
     ],
-    "extraResources": [
+    "extraFiles": [
       {
         "from": "config",
         "to": "config"
@@ -42,5 +40,8 @@
     "portable": {
       "artifactName": "${productName}.exe"
     }
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
   }
 }
