@@ -65,10 +65,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
      * @param {Array<Array>} headerRows - ヘッダー行の配列
      * @param {Array<Array>} dataRows - データ行の配列
      * @param {Array<{row: number, cols: number[]}>} manualOverrideCells - 手動展開セルの位置
+     * @param {string} surveyId - 調査ID（サブフォルダ名として使用）
      * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
-    saveExcel: (filename, headerRows, dataRows, manualOverrideCells) => {
-        return ipcRenderer.invoke('save-excel', { filename, headerRows, dataRows, manualOverrideCells });
+    saveExcel: (filename, headerRows, dataRows, manualOverrideCells, surveyId) => {
+        return ipcRenderer.invoke('save-excel', { filename, headerRows, dataRows, manualOverrideCells, surveyId });
     },
 
     /**

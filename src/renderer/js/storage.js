@@ -426,9 +426,10 @@ class DataExporter {
      *     ...
      *   }
      * @param {Array} fieldOrder - フィールドの出力順序
+     * @param {string} surveyId - 調査ID（サブフォルダ名として使用）
      * @returns {Promise<{success: boolean, path?: string}>} 結果
      */
-    static async exportWithHeaders(data, filename, questionsConfig, questionsMetadata, fieldOrder) {
+    static async exportWithHeaders(data, filename, questionsConfig, questionsMetadata, fieldOrder, surveyId) {
         if (!data || !data.length) {
             alert('データがありません');
             return { success: false };
@@ -476,8 +477,8 @@ class DataExporter {
             if (window.electronAPI && window.electronAPI.isElectron && window.electronAPI.saveExcel) {
                 // ファイル名を.xlsxに変更
                 const excelFilename = filename.replace(/\.csv$/, '.xlsx');
-                // Electron: Excelファイルとして保存
-                return await window.electronAPI.saveExcel(excelFilename, headerRows, dataRows, manualOverrideCells);
+                // Electron: Excelファイルとして保存（surveyIdでサブフォルダ分け）
+                return await window.electronAPI.saveExcel(excelFilename, headerRows, dataRows, manualOverrideCells, surveyId);
             } else {
                 // ブラウザ: CSVとしてダウンロード（フォールバック）
                 const csvRows = [

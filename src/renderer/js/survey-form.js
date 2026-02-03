@@ -219,7 +219,17 @@ class FormState {
         // 設定（外部から注入）
         this.config = null;
         this.operatorName = '';
-        
+
+        // ナビゲーション設定（'tab' | 'enter'）
+        this.navigationMode = this._loadNavigationMode();
+
+        // 2桁入力待機時間（ミリ秒）
+        this.digitWaitTime = this._loadDigitWaitTime();
+
+        // フォーカス色
+        this.focusColor = this._loadFocusColor();
+        this._applyFocusColor(this.focusColor);
+
         // イベントリスナー
         this._listeners = {};
     }
@@ -342,6 +352,88 @@ class FormState {
     setOperatorName(name) {
         this.operatorName = name || '';
     }
+
+    // --- ナビゲーションモード ---
+    _loadNavigationMode() {
+        try {
+            return localStorage.getItem('surveyApp_navigationMode') || 'tab';
+        } catch (e) {
+            return 'tab';
+        }
+    }
+
+    setNavigationMode(mode) {
+        this.navigationMode = mode;
+        try {
+            localStorage.setItem('surveyApp_navigationMode', mode);
+        } catch (e) {
+            // ignore
+        }
+        this.emit('navigationModeChange', { mode });
+    }
+
+    isEnterNavigation() {
+        return this.navigationMode === 'enter';
+    }
+
+    // --- 2桁入力待機時間 ---
+    _loadDigitWaitTime() {
+        try {
+            const saved = localStorage.getItem('surveyApp_digitWaitTime');
+            return saved ? parseInt(saved, 10) : 500;
+        } catch (e) {
+            return 500;
+        }
+    }
+
+    setDigitWaitTime(ms) {
+        this.digitWaitTime = ms;
+        try {
+            localStorage.setItem('surveyApp_digitWaitTime', String(ms));
+        } catch (e) {
+            // ignore
+        }
+        this.emit('digitWaitTimeChange', { ms });
+    }
+
+    // --- フォーカス色 ---
+    static FOCUS_COLORS = {
+        green:  { color: '#2e7d32', dark: '#1b5e20', bg: '#e8f5e9' },
+        blue:   { color: '#1565c0', dark: '#0d47a1', bg: '#e3f2fd' },
+        purple: { color: '#7b1fa2', dark: '#4a148c', bg: '#f3e5f5' },
+        orange: { color: '#e65100', dark: '#bf360c', bg: '#fff3e0' },
+        red:    { color: '#c62828', dark: '#b71c1c', bg: '#ffebee' },
+        teal:   { color: '#00796b', dark: '#004d40', bg: '#e0f2f1' }
+    };
+
+    _loadFocusColor() {
+        try {
+            const saved = localStorage.getItem('surveyApp_focusColor');
+            return (saved && FormState.FOCUS_COLORS[saved]) ? saved : 'green';
+        } catch (e) {
+            return 'green';
+        }
+    }
+
+    _applyFocusColor(colorName) {
+        const colors = FormState.FOCUS_COLORS[colorName];
+        if (!colors) return;
+        document.documentElement.style.setProperty('--focus-color', colors.color);
+        document.documentElement.style.setProperty('--focus-color-dark', colors.dark);
+        document.documentElement.style.setProperty('--focus-bg', colors.bg);
+    }
+
+    setFocusColor(colorName) {
+        if (!FormState.FOCUS_COLORS[colorName]) return;
+        this.focusColor = colorName;
+        this._applyFocusColor(colorName);
+        try {
+            localStorage.setItem('surveyApp_focusColor', colorName);
+        } catch (e) {
+            // ignore
+        }
+        this.emit('focusColorChange', { colorName });
+    }
 }
 
 
@@ -406,19 +498,19 @@ class ConditionEvaluator {
      */
     isVisible(questionEl) {
         if (!questionEl) return false;
-        
+
         // 自身が条件付きで非表示
-        if (questionEl.classList.contains('conditional') && 
+        if (questionEl.classList.contains('conditional') &&
             !questionEl.classList.contains('show')) {
             return false;
         }
-        
+
         // 親が条件付きで非表示
         const conditionalParent = questionEl.parentElement?.closest('.conditional');
         if (conditionalParent && !conditionalParent.classList.contains('show')) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -817,7 +909,7 @@ class Navigator {
      */
     moveNext() {
         const question = this.state.getCurrentQuestion();
-        
+
         // 表形式の場合、まず行を進める
         if (question?.dataset.type === 'table') {
             const tableConfig = this.state.getTableConfig();
@@ -901,9 +993,6 @@ class AnswerHandler {
     constructor(state, conditionEvaluator) {
         this.state = state;
         this.condition = conditionEvaluator;
-
-        // 2桁入力の待機時間（ミリ秒）
-        this.DIGIT_WAIT_MS = 500;
 
         // 選択肢キャッシュ（設問名 → { inputs: NodeList, count: number }）
         this._optionCache = new Map();
@@ -1010,7 +1099,7 @@ class AnswerHandler {
                 this.state.clearDigitBuffer();
                 this._pendingSelect = null;
                 onSelect(num);
-            }, this.DIGIT_WAIT_MS);
+            }, this.state.digitWaitTime);
         } else {
             // 即時選択（0、または待機不要な数字）
             this._pendingSelect = null;
@@ -1063,14 +1152,30 @@ class AnswerHandler {
             const wasChecked = input.checked;
             const parent = input.closest('.options');
             parent?.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
-            
+
+            // 「その他」テキストボックスを取得（labelの次の兄弟要素）
+            const otherWrapper = label?.nextElementSibling;
+            const otherTextInput = otherWrapper?.classList.contains('other-input')
+                ? otherWrapper.querySelector('.text-field')
+                : null;
+
             if (wasChecked) {
+                // 「その他」オプションでテキスト入力済みの場合は解除せずテキストボックスにフォーカス
+                if (otherTextInput && otherTextInput.value.trim() !== '') {
+                    label?.classList.add('selected');
+                    otherTextInput.focus();
+                    return;
+                }
                 input.checked = false;
             } else {
                 input.checked = true;
                 label?.classList.add('selected');
                 // 選択時のみスクロール
                 ScrollHelper.scrollIntoViewIfNeeded(label, { extraPadding: 10 });
+                // 「その他」オプションの場合はテキストボックスにフォーカス
+                if (otherTextInput) {
+                    otherTextInput.focus();
+                }
             }
             this._handleRadioChange(input);
         }
@@ -1318,28 +1423,71 @@ class InputRouter {
         if (this.onModalKeydown?.(e)) return;
 
         const activeEl = document.activeElement;
-        const isTextInput = activeEl.tagName === 'INPUT' && 
+        const isTextInput = activeEl.tagName === 'INPUT' &&
                            (activeEl.type === 'text' || activeEl.type === 'number');
         const isTextarea = activeEl.tagName === 'TEXTAREA';
         const isSelect = activeEl.tagName === 'SELECT';
         const isButton = activeEl.tagName === 'BUTTON';
+        const isEnterNav = this.state.isEnterNavigation();
 
-        // Tab/Shift+Tab: 設問間移動
+        // Tab/Shift+Tab: 設問間移動（Tabモード時）またはフィールド内移動
         if (e.key === 'Tab') {
             e.preventDefault();
-            this._handleTab(activeEl, e.shiftKey);
+            if (isEnterNav) {
+                // Enterナビモードでは、複数フィールド内移動のみ許可
+                const question = this.state.getCurrentQuestion();
+                if (question) {
+                    this._handleMultiFieldNav(activeEl, question, e.shiftKey);
+                }
+                // それ以外は何もしない
+                return;
+            } else {
+                // Tabモード: 設問間移動
+                this._handleNavigation(activeEl, e.shiftKey);
+                return;
+            }
+        }
+
+        // Enter/Shift+Enter: ナビゲーションまたは保存確認
+        if (e.key === 'Enter') {
+            if (isButton) return;
+
+            if (isEnterNav) {
+                // Enterナビモード: 設問間移動
+                if (isTextarea && !e.shiftKey) {
+                    // テキストエリアでは改行を許可（Shift+Enterは戻る）
+                    if (!e.shiftKey) return;
+                }
+                e.preventDefault();
+
+                if (e.shiftKey) {
+                    // Shift+Enter: 前へ戻る
+                    this._handleNavigation(activeEl, true);
+                } else {
+                    // Enter: 次へ進む
+                    this._handleNavigation(activeEl, false);
+                }
+            } else {
+                // Tabモード: 従来の動作（フィールド内でEnter→次へ、それ以外→保存確認）
+                if (isTextInput || isSelect) {
+                    e.preventDefault();
+                    this._handleEnterInInput(activeEl);
+                } else if (!isTextarea) {
+                    e.preventDefault();
+                    this.onEnterAtEnd?.();
+                }
+            }
             return;
         }
 
-        // Enter: 次へ進む or 保存確認
-        if (e.key === 'Enter') {
-            if (isButton) return;
-            if (isTextInput || isSelect) {
-                e.preventDefault();
-                this._handleEnterInInput(activeEl);
-            } else if (!isTextarea) {
-                e.preventDefault();
-                this.onEnterAtEnd?.();
+        // Escape: テキストボックスから設問にフォーカスを移す
+        if (e.key === 'Escape' && (isTextInput || isTextarea)) {
+            e.preventDefault();
+            const question = activeEl.closest('.question');
+            if (question) {
+                question.setAttribute('tabindex', '-1');
+                question.style.outline = 'none';
+                question.focus({ preventScroll: true });
             }
             return;
         }
@@ -1385,11 +1533,16 @@ class InputRouter {
         }
     }
 
-    _handleTab(activeEl, isShiftTab) {
+    /**
+     * 設問間ナビゲーション（Tab/Enter共通）
+     * @param {Element} activeEl - 現在フォーカスのある要素
+     * @param {boolean} isBackward - 戻る方向か
+     */
+    _handleNavigation(activeEl, isBackward) {
         // 複数フィールド内での移動を試みる
         const question = this.state.getCurrentQuestion();
         if (question) {
-            const moved = this._handleMultiFieldNav(activeEl, question, isShiftTab);
+            const moved = this._handleMultiFieldNav(activeEl, question, isBackward);
             if (moved) return;
         }
 
@@ -1404,14 +1557,18 @@ class InputRouter {
             document.activeElement.blur();
         }
 
-        if (isShiftTab) {
+        if (isBackward) {
             this.navigator.movePrev();
         } else {
             if (this.state.isAtIdSection() && !this.state.hasValidId()) {
                 this.onIdRequired?.('IDを入力してください');
                 return;
             }
-            this.navigator.moveNext();
+            // 最後の設問で進もうとした場合は保存確認
+            const moved = this.navigator.moveNext();
+            if (!moved && this.state.isEnterNavigation()) {
+                this.onEnterAtEnd?.();
+            }
         }
     }
 
@@ -1843,13 +2000,19 @@ class UIUpdater {
         const question = this.state.questionList[index];
         if (!question) return;
 
-        // テキスト入力がある場合はそこにフォーカス
-        const firstInput = question.querySelector('input[type="text"], input[type="number"], textarea, select');
+        // 「その他」テキストボックス以外のテキスト入力がある場合はそこにフォーカス
+        // （その他テキストボックスは .other-input 内にある）
+        const firstInput = question.querySelector(
+            '.text-input input[type="text"], .number-input input[type="number"], ' +
+            '.number-field input[type="number"], .textarea-input textarea, ' +
+            '.select-input select, .date-input input, .date-wareki-input select, ' +
+            '.date-wareki-input input, .year-month-input select'
+        );
         if (firstInput) {
             firstInput.focus({ preventScroll: true });
             return;
         }
-        
+
         // ラジオ/チェックボックスのみの設問は、設問要素自体にフォーカス（枠線なしで）
         question.setAttribute('tabindex', '-1');
         question.style.outline = 'none';
@@ -2015,7 +2178,8 @@ class SurveyApp {
             data, filename,  // 元データを渡す（_manualOverrideFieldsを含む）
             this._config.questionsConfig,
             this._config.questionsMetadata,
-            this._config.fieldOrder
+            this._config.fieldOrder,
+            this._config.surveyId  // 調査IDでサブフォルダ分け
         );
 
         if (result && result.success) {
@@ -2443,6 +2607,7 @@ class SurveyApp {
         idInput.addEventListener('keydown', e => {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                e.stopPropagation();  // グローバルハンドラーへの伝播を防止
                 if (this.validateId()) {
                     this.navigator.moveNext();
                 }
@@ -2501,7 +2666,47 @@ class SurveyApp {
 
     showSettings() {
         const modal = this.state.elements.settingsModal;
-        if (modal) modal.classList.add('show');
+        if (modal) {
+            // 現在のナビゲーションモードを反映
+            const currentMode = this.state.navigationMode;
+            const tabRadio = document.getElementById('navModeTab');
+            const enterRadio = document.getElementById('navModeEnter');
+            if (tabRadio) tabRadio.checked = (currentMode === 'tab');
+            if (enterRadio) enterRadio.checked = (currentMode === 'enter');
+
+            // 現在の2桁入力待機時間を反映
+            const currentWait = this.state.digitWaitTime;
+            const wait200 = document.getElementById('digitWait200');
+            const wait500 = document.getElementById('digitWait500');
+            const wait700 = document.getElementById('digitWait700');
+            if (wait200) wait200.checked = (currentWait === 200);
+            if (wait500) wait500.checked = (currentWait === 500);
+            if (wait700) wait700.checked = (currentWait === 700);
+
+            // 現在のフォーカス色を反映
+            this._initColorPicker();
+
+            modal.classList.add('show');
+        }
+    }
+
+    _initColorPicker() {
+        const picker = document.getElementById('focusColorPicker');
+        if (!picker) return;
+
+        const swatches = picker.querySelectorAll('.color-swatch');
+        const currentColor = this.state.focusColor;
+
+        swatches.forEach(swatch => {
+            const color = swatch.dataset.color;
+            swatch.classList.toggle('selected', color === currentColor);
+
+            // イベントリスナーを一度だけ設定
+            if (!swatch._hasClickHandler) {
+                swatch.addEventListener('click', () => this.setFocusColor(swatch.dataset.color));
+                swatch._hasClickHandler = true;
+            }
+        });
     }
 
     closeSettings() {
@@ -2511,6 +2716,31 @@ class SurveyApp {
 
     toggleShowAllConditional(checked) {
         this.condition.setShowAll(checked);
+    }
+
+    setNavigationMode(mode) {
+        this.state.setNavigationMode(mode);
+        const modeText = mode === 'enter' ? 'Enter/Shift+Enter' : 'Tab/Shift+Tab';
+        this._showToast(`ナビゲーション: ${modeText}`);
+    }
+
+    setDigitWaitTime(ms) {
+        this.state.setDigitWaitTime(ms);
+        const labels = { 200: '早い', 500: '普通', 700: '遅い' };
+        this._showToast(`2桁入力待機: ${labels[ms] || ms + 'ms'}`);
+    }
+
+    setFocusColor(colorName) {
+        this.state.setFocusColor(colorName);
+        // UI更新
+        const picker = document.getElementById('focusColorPicker');
+        if (picker) {
+            picker.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.classList.toggle('selected', swatch.dataset.color === colorName);
+            });
+        }
+        const labels = { green: '緑', blue: '青', purple: '紫', orange: 'オレンジ', red: '赤', teal: 'ティール' };
+        this._showToast(`フォーカス色: ${labels[colorName] || colorName}`);
     }
 
     /**

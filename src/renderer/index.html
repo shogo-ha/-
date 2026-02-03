@@ -130,14 +130,21 @@
             margin: 20px 0;
             text-align: left;
         }
+        .settings-section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
         .settings-label {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 1.1em;
             cursor: pointer;
+            margin: 8px 0;
         }
-        .settings-label input[type="checkbox"] {
+        .settings-label input[type="checkbox"],
+        .settings-label input[type="radio"] {
             width: 18px;
             height: 18px;
         }
@@ -145,6 +152,27 @@
             margin-top: 8px;
             font-size: 0.85em;
             color: #666;
+        }
+        /* カラーピッカー */
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .color-swatch {
+            width: 36px;
+            height: 36px;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        .color-swatch.selected {
+            border-color: #333;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
         }
     </style>
 </head>
@@ -276,6 +304,46 @@
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <h3>⚙ 設定</h3>
+            <div class="settings-group">
+                <p class="settings-section-title">ナビゲーション方法</p>
+                <label class="settings-label">
+                    <input type="radio" name="navigationMode" value="tab" id="navModeTab" onchange="surveyForm.setNavigationMode('tab')">
+                    Tab / Shift+Tab で移動
+                </label>
+                <label class="settings-label">
+                    <input type="radio" name="navigationMode" value="enter" id="navModeEnter" onchange="surveyForm.setNavigationMode('enter')">
+                    Enter / Shift+Enter で移動
+                </label>
+                <p class="settings-hint">設問間の移動に使用するキーを選択します</p>
+            </div>
+            <div class="settings-group">
+                <p class="settings-section-title">2桁入力の待機時間</p>
+                <label class="settings-label">
+                    <input type="radio" name="digitWaitTime" value="200" id="digitWait200" onchange="surveyForm.setDigitWaitTime(200)">
+                    早い（0.2秒）
+                </label>
+                <label class="settings-label">
+                    <input type="radio" name="digitWaitTime" value="500" id="digitWait500" onchange="surveyForm.setDigitWaitTime(500)">
+                    普通（0.5秒）
+                </label>
+                <label class="settings-label">
+                    <input type="radio" name="digitWaitTime" value="700" id="digitWait700" onchange="surveyForm.setDigitWaitTime(700)">
+                    遅い（0.7秒）
+                </label>
+                <p class="settings-hint">10以上の選択肢で2桁目を待つ時間です</p>
+            </div>
+            <div class="settings-group">
+                <p class="settings-section-title">フォーカス色</p>
+                <div class="color-picker" id="focusColorPicker">
+                    <button type="button" class="color-swatch" data-color="green" style="background: #2e7d32;" title="緑（デフォルト）"></button>
+                    <button type="button" class="color-swatch" data-color="blue" style="background: #1565c0;" title="青"></button>
+                    <button type="button" class="color-swatch" data-color="purple" style="background: #7b1fa2;" title="紫"></button>
+                    <button type="button" class="color-swatch" data-color="orange" style="background: #e65100;" title="オレンジ"></button>
+                    <button type="button" class="color-swatch" data-color="red" style="background: #c62828;" title="赤"></button>
+                    <button type="button" class="color-swatch" data-color="teal" style="background: #00796b;" title="ティール"></button>
+                </div>
+                <p class="settings-hint">設問フォーカス時の枠線・背景の色を変更します</p>
+            </div>
             <div class="settings-group">
                 <label class="settings-label">
                     <input type="checkbox" id="showAllConditional" onchange="surveyForm.toggleShowAllConditional(this.checked)">

@@ -189,11 +189,16 @@ function registerHandlers(getConfigBasePath, getDataBasePath, getOperatorName, i
 
     /**
      * Excelファイルを保存（手動展開セルのハイライト付き）
+     * @param {string} surveyId - 調査ID（サブフォルダ名として使用）
      */
-    ipcMain.handle('save-excel', async (event, { filename, headerRows, dataRows, manualOverrideCells }) => {
+    ipcMain.handle('save-excel', async (event, { filename, headerRows, dataRows, manualOverrideCells, surveyId }) => {
         try {
             const basePath = getDataBasePath();
-            const excelDir = path.join(basePath, 'data', 'excel');
+            // 調査IDごとにサブフォルダを作成
+            const safeSurveyId = surveyId ? sanitizeFilename(surveyId) : '';
+            const excelDir = safeSurveyId
+                ? path.join(basePath, 'data', 'excel', safeSurveyId)
+                : path.join(basePath, 'data', 'excel');
             const safeFilename = sanitizeFilename(filename);
             if (!safeFilename) {
                 return { success: false, error: '無効なファイル名です' };
@@ -205,7 +210,9 @@ function registerHandlers(getConfigBasePath, getDataBasePath, getOperatorName, i
 
             const filePath = path.join(excelDir, safeFilename);
 
-            if (!isPathWithinDirectory(filePath, excelDir)) {
+            // パス検証は親ディレクトリ（data/excel）を基準に
+            const baseExcelDir = path.join(basePath, 'data', 'excel');
+            if (!isPathWithinDirectory(filePath, baseExcelDir)) {
                 return { success: false, error: '不正なファイルパスです' };
             }
 

@@ -19,6 +19,11 @@
     --primary-dark: #1b5e20;
     --primary-light: #e8f5e9;
 
+    /* フォーカス色（設定で変更可能） */
+    --focus-color: #2e7d32;
+    --focus-color-dark: #1b5e20;
+    --focus-bg: #e8f5e9;
+
     /* テキスト入力共通変数 */
     --input-border: #dee2e6;
     --input-border-radius: 8px;
@@ -31,6 +36,47 @@
     --bottom-margin: 40px;
     --top-padding: 20px;
     --scroll-duration: 400ms;
+}
+
+/* ===== フォーカス色スタイル（設定で変更可能） ===== */
+/* ID入力セクション */
+.id-section.active {
+    border-color: var(--focus-color);
+    background: var(--focus-bg);
+}
+.id-input:focus {
+    outline: none;
+    border-color: var(--focus-color);
+}
+
+/* 設問カード */
+.question.active {
+    border-color: var(--focus-color);
+    background: var(--focus-bg);
+}
+.question.active .question-title .num {
+    background: var(--focus-color);
+}
+.question.active .option-key {
+    background: var(--focus-color);
+}
+.question.active .option-label:hover {
+    border-color: var(--focus-color);
+}
+.question.active .option-label.selected {
+    border-color: var(--focus-color);
+    background: var(--focus-bg);
+}
+.question.active .option-label.selected .option-key {
+    background: var(--focus-color-dark);
+}
+
+/* 入力フィールド共通 */
+.question.active .text-field:focus,
+.question.active input:focus,
+.question.active textarea:focus,
+.question.active select:focus {
+    border-color: var(--focus-color);
 }
 
 * { box-sizing: border-box; }
@@ -158,10 +204,6 @@ body {
     border: 2px solid #e9ecef;
     transition: all 0.2s ease;
 }
-.id-section.active { 
-    border-color: var(--primary); 
-    background: var(--primary-light); 
-}
 .id-input-group {
     display: flex;
     align-items: center;
@@ -179,10 +221,6 @@ body {
     border-radius: 8px;
     width: 180px;
     text-align: center;
-}
-.id-input:focus {
-    outline: none;
-    border-color: var(--primary);
 }
 
 /* ===== セクション ===== */
@@ -225,10 +263,6 @@ body {
     border: 2px solid transparent;
     outline: none;
     transition: all 0.2s ease;
-}
-.question.active {
-    border-color: var(--primary);
-    background: var(--primary-light);
 }
 .question-title {
     font-weight: bold;
